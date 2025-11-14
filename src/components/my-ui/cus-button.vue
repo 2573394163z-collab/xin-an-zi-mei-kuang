@@ -7,7 +7,7 @@ const data = ref({
   roam: {
     全部巷道: {
       name: '全部巷道',
-      active: true,
+      active: false,
       bg: 'bg-[url(@/assets/img/17-2.png)]',
     },
     '-55巷道': {
@@ -95,6 +95,15 @@ const data = ref({
 
 const handleAll = () => {
   selectedAll.value = !selectedAll.value
+  if (!selectedAll.value) {
+    Object.values(data.value.roam).forEach((item) => (item.active = false))
+    sendToUE('c1-click', {
+      item: '全部巷道',
+      selectedAll: selectedAll.value,
+      hovered: false, // 点击时 hovered = 当前选中巷道
+      selected: false, // 同步 selected = 当前选中巷道
+    })
+  }
 }
 
 const handleSelectRoam = (index) => {

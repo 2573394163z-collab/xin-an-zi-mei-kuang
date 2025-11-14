@@ -11,7 +11,7 @@ const data = ref({
   roam: {
     全部巷道: {
       name: '全部巷道',
-      active: true,
+      active: false,
       bg: 'bg-[url(@/assets/img/17-2.png)]',
     },
     '-55巷道': {

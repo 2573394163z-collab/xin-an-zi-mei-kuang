@@ -38,7 +38,7 @@ const data = ref({
   roam: {
     '-55巷道': {
       name: '-55巷道',
-      active: true,
+      active: false,
       bg: 'bg-[url(@/assets/img/17-2.png)]',
     },
     '-5巷道': {
@@ -112,7 +112,12 @@ const handleMineClick = () => {
 
 const handleRoamClick = () => {
   selectedRoam.value = !selectedRoam.value
+  // 新增：发射 roam-change 事件
+  emit('roam-change', selectedRoam.value)
   if (!selectedRoam.value) sendToUE(`c1-btn1-type`, { item: '漫游', selected: selectedRoam.value })
+  if (!selectedRoam.value) {
+    Object.values(data.value.roam).forEach((item) => (item.active = false))
+  }
 }
 watchUEEvents({
   'c1-btn1-type': (data) => {
@@ -165,7 +170,7 @@ const events = {
 }
 // watchUEEvents(events)
 
-const emit = defineEmits(['nav-change'])
+const emit = defineEmits(['nav-change', 'roam-change'])
 const navEvent = (index, cRoute, n) => {
   if (cRoute.meta?.title === '经营决策') {
     console.log('🚫 点击了经营决策，不执行跳转或UE消息')
@@ -262,9 +267,9 @@ watchEffect(() => {
   <div class="absolute bottom-[55px] left-[2934px] w-[265px] h-[58px] bg-[url('@/assets/img/18-1.png')] z-3" v-if="selectedFactory">
     <span class="text-[28px] pl-[106px] pt-[5px]" @click="handleMineClick()">矿下场景</span>
   </div>
-  <div class="absolute bottom-[158px] left-[2934px] w-[265px] h-[58px] bg-[url('@/assets/img/18-2.png')] z-3" v-if="selectedFactory">
+  <!-- <div class="absolute bottom-[158px] left-[2934px] w-[265px] h-[58px] bg-[url('@/assets/img/18-2.png')] z-3" v-if="selectedFactory">
     <span class="text-[28px] pl-[106px] pt-[5px]" @click="handleFactoryClick()">厂区场景</span>
-  </div>
+  </div> -->
   <div class="absolute bottom-[60px] left-[2934px] w-[265px] h-[58px] bg-[url('@/assets/img/18-2.png')] z-3" v-if="selectedMine">
     <span class="text-[28px] pl-[106px] pt-[5px]" @click="handleFactoryClick()">厂区场景</span>
   </div>

@@ -138,7 +138,44 @@ const data = ref({
       },
     ],
   },
+  section3: {
+    1: {
+      active: true,
+      icon: 'bg-[url(@/assets/img/34.png)]',
+      icon1: 'bg-[url(@/assets/img/34-c.png)]',
+    },
+    2: {
+      active: false,
+      icon: 'bg-[url(@/assets/img/34.png)]',
+      icon1: 'bg-[url(@/assets/img/34-c.png)]',
+    },
+    3: {
+      active: false,
+      icon: 'bg-[url(@/assets/img/34.png)]',
+      icon1: 'bg-[url(@/assets/img/34-c.png)]',
+    },
+    4: {
+      active: false,
+      icon: 'bg-[url(@/assets/img/34.png)]',
+      icon1: 'bg-[url(@/assets/img/34-c.png)]',
+    },
+    5: {
+      active: false,
+      icon: 'bg-[url(@/assets/img/34.png)]',
+      icon1: 'bg-[url(@/assets/img/34-c.png)]',
+    },
+  },
 })
+
+const changeActive = (index) => {
+  for (const key in data.value.section3) {
+    if (key === index) {
+      data.value.section3[key].active = true
+    } else {
+      data.value.section3[key].active = false
+    }
+  }
+}
 </script>
 <template>
   <div class="w-[700px] top-[117px] right-[44px] absolute flex flex-col">
@@ -174,8 +211,23 @@ const data = ref({
       </div>
     </div>
     <cus-title title="视频监控" />
-    <div class="bg-[url('@/assets/img/1.png')] h-[492px] w-[700px] kt-bg-full">
+    <div class="bg-[url('@/assets/img/1.png')] h-[420px] w-[700px] kt-bg-full">
       <div class="bg-[url('@/assets/img/12.png')] h-[33px] w-[192px] kt-bg-full ml-[33px] text-[24px] pl-[33px]">XXX巷道口</div>
+      <div class="ml-[33px] mt-[7px] flex items-center justify-center bg-[url('@/assets/img/video.png')] kt-bg-full" style="height: 362px; width: 647px">
+        <div class="relative">
+          <video class="w-[610px] h-[343px] object-cover rounded-sm bg-gray-900" autoplay muted loop>
+            <div class="w-full h-full flex flex-col items-center justify-center text-gray-500">
+              <div class="i-carbon-video-off text-4xl mb-2"></div>
+              <div>视频流未连接</div>
+            </div>
+          </video>
+        </div>
+      </div>
+      <div class="w-[175px] flex justify-around ml-[260px] mt-[5px]">
+        <div v-for="(item, index) in data.section3" key="index">
+          <div :class="['w-[23px] h-[10px] kt-bg-full ', item.active ? item.icon1 : item.icon]" @click="changeActive(index)"></div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
