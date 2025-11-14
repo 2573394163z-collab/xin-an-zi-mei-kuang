@@ -7,8 +7,9 @@ import './style/style.css'
 import './style/tailwind.css'
 import './style/animate.min.css'
 import '@/custom-elements/index.js'
+import ElementPlus from 'element-plus'
 const app = createApp(App)
 const pinia = createPinia()
-app.use(KTUI).use(router).use(pinia).mount('#app')
+app.use(KTUI).use(router).use(pinia).use(ElementPlus).mount('#app')
 
 import.meta.env.MODE === 'production' && console.log(`项目最后打包时间: ${LATEST_BUILD_TIME}`)

@@ -12,6 +12,14 @@
     import { css } from '@/assets/font/DingTalk JinBuTi.ttf';
     <div :style="{ fontFamily: css.family }"></div>
   */
+        @font-face {
+          font-family: "Source-Han-Sans-CN";
+          src: url("@/assets/font/SourceHanSansCN-Regular.otf");
+        }
+        @font-face {
+          font-family: "NotoSansSC";
+          src: url("@/assets/font/NotoSansSCMedium-4.ttf");
+        }
 }
 
 @layer components {
@@ -65,12 +73,20 @@
   }
 
   .kt-bg-gradient2 {
-    background: linear-gradient(180deg, #ffffff 0%, #00c2ff 68%);
+    background: linear-gradient(180deg, #ffffff 0%, #C3E2FF 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: bold;
   }
+
+    .kt-bg-gradient3 {
+    background: linear-gradient(180deg, #ffffff 0%, #2D62E0 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
 
   .kt-border-gradient {
     border-left: 2px solid white;
