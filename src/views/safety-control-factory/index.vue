@@ -188,7 +188,7 @@ const handleLeaveRoam = () => {
         <span class="text-[28px] font-bold">安全生产总天数：</span>
       </div>
     </div>
-    <div v-for="(item, index) in data.day" :key="index" class="w-[74px] h-[78px] flex gap-[12px]">
+    <div v-for="(item, index) in data.day" :key="index" class="w-[74px] h-[78px] flex gap-x-[12px]">
       <div class="w-[74px] h-[78px] bg-[url('@/assets/img/19.png')] kt-bg-full flex justify-center items-center">
         <span class="text-[48px] font-bold font-[Source-Han-Sans-CN]" :style="{ opacity: item === 0 ? 0.4 : 1 }">{{ item }}</span>
       </div>

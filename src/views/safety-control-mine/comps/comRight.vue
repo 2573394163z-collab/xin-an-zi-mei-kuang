@@ -140,7 +140,7 @@ const data = ref({
 })
 </script>
 <template>
-  <div class="w-[700px] top-[117px] right-[44px] absolute flex flex-col">
+  <div class="w-[700px] top-[117px] right-[44px] absolute flex flex-col right">
     <!--人员在岗-->
     <cus-title title="人员在岗" />
     <div class="bg-[url('@/assets/img/1.png')] h-[331px] w-[700px] kt-bg-full">

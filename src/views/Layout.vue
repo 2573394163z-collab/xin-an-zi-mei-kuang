@@ -38,7 +38,10 @@ onMounted(() => {
       el: '#app-main', // 默认是 "body" 支持所有 css 选择器 (推荐使用 id )
       dw: 4368,
       dh: 1560,
+      // dw: 3200,
+      // dh: 1080,
       resize: true, // 默认是 true 关闭后无法自动计算拖动后的大小
+      // ignore: ['.right', '.left'],
     },
     false // 默认是 false 检查autofit.js是否正在运行
   )
@@ -51,7 +54,7 @@ onMounted(() => {
     <!-- <KtTimer /> -->
     <div class="kt-full absolute top-0 left-0 bg-[url('@/assets/img/bg/bg.png')] kt-bg-full"></div>
     <div class="kt-full absolute top-0 left-0 bg-[url('@/assets/img/bg/bg-1.png')] kt-bg-full"></div>
-    <div class="absolute top-[62px] left-[1727px] w-[915px] h-[69px] bg-[url('@/assets/img/bg/title.png')] kt-bg-full"></div>
+    <div class="absolute top-[39px] left-[1748px] w-[873px] h-[122px] bg-[url('@/assets/img/bg/title.png')] kt-bg-full"></div>
     <!-- <div class="kt-bg-gradient2 absolute font-[Source-Han-Sans-CN] font-bold text-[54px] kt-x-center top-[56px] tracking-[4px]">
       章源钨业新安子矿业综合管控平台
     </div> -->
