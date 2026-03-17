@@ -23,10 +23,20 @@ axios.defaults.baseURL = window.__ENV.API1_URL
 // )
 axios.interceptors.request.use(
   (config) => {
-    // 判断是不是文件上传
+    // 自动处理 Token
+    const token = localStorage.getItem('access_token') || ''
+    if (token) {
+      // 兼容多种后端：.NET 通常喜欢 'token'，标准 JWT 喜欢 'Authorization: Bearer <token>'
+      config.headers['token'] = token 
+      config.headers['Authorization'] = `Bearer ${token}` 
+    }
+
+    // 自动处理 FormData
     if (config.data instanceof FormData) {
-      config.headers['Content-Type'] = 'multipart/form-data'
-    } else {
+      delete config.headers['Content-Type']
+    } else if (config.data instanceof URLSearchParams) {
+      config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    } else if (config.data && typeof config.data === 'object' && !config.headers['Content-Type']) {
       config.headers['Content-Type'] = 'application/json;charset=UTF-8'
     }
     return config
@@ -54,26 +64,38 @@ axios.interceptors.response.use(
 )
 
 // 封装 GET POST 请求并导出
-export function request(url = '', params = {}, type = 'POST', config = {}) {
+export function request(url = '', params = {}, type = 'POST', options = {}) {
+  const { isForm = false, ...axiosConfig } = options
+  
+  let data = params
+  const headers = { ...axiosConfig.headers }
+
+  // 处理表单格式 (x-www-form-urlencoded)
+  if (isForm && type.toUpperCase() === 'POST') {
+    // 尝试使用 URLSearchParams，这是 axios 1.x 推荐的处理 x-www-form-urlencoded 的方式
+    const formParams = new URLSearchParams()
+    for (const key in params) {
+      if (params[key] !== undefined && params[key] !== null) {
+        formParams.append(key, params[key])
+      }
+    }
+    data = formParams
+  }
+
   return new Promise((resolve, reject) => {
-    let promise;
-
-    // 默认配置合并
     const requestConfig = {
-      ...config, // 合并传递的配置
+      ...axiosConfig,
       url,
-      method: type.toUpperCase(), // 正确设置 HTTP 方法
-      params: type.toUpperCase() === 'GET' ? params : undefined, // GET 请求使用 params
-      data: type.toUpperCase() === 'POST' ? params : undefined, // POST 请求使用 data
-    };
+      method: type.toUpperCase(),
+      params: type.toUpperCase() === 'GET' ? params : undefined,
+      data: type.toUpperCase() === 'POST' ? data : undefined,
+      headers,
+    }
 
-    promise = axios(requestConfig);
-
-    // 处理返回
-    promise
+    axios(requestConfig)
       .then((res) => resolve(res))
-      .catch((err) => reject(err));
-  });
+      .catch((err) => reject(err))
+  })
 }
 // 封装 GET POST 请求并导出
 // export function request(url = '', params = {}, type = 'POST') {

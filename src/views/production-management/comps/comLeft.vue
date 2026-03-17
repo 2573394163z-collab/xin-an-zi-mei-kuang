@@ -3,6 +3,7 @@ import cusTitle from '@/components/my-ui/cus-title.vue'
 import KtEchart from '@/components/utils-ui/kt-echart.vue'
 import { panel } from './createOption'
 import { getProductionExecutionPlan, getProductionProgress } from '@/axios/production-management'
+import TimerManager from '@/utils/timerManager'
 
 const data = ref({
   section1: {
@@ -95,8 +96,21 @@ onMounted(() => {
   echartsData1.value = panel(2.5, 5)
 })
 
-ProductionExecutionPlan()
-ProductionProgress()
+// ProductionExecutionPlan()
+// ProductionProgress()
+// 组件挂载时设置定时器
+onMounted(() => {
+  ProductionExecutionPlan()
+  ProductionProgress()
+
+  TimerManager.addTimer('productionExecutionPlan', ProductionExecutionPlan)
+  TimerManager.addTimer('productionProgress', ProductionProgress)
+})
+
+onUnmounted(() => {
+  TimerManager.clearTimer('productionProgress')
+  TimerManager.clearTimer('productionExecutionPlan')
+})
 </script>
 <template>
   <div class="w-[700px] top-[117px] left-[44px] absolute flex flex-col">

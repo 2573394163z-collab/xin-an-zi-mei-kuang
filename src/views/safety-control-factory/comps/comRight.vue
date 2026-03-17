@@ -3,6 +3,8 @@ import cusTitle from '@/components/my-ui/cus-title.vue'
 import ktTable from '@/components/my-ui/kt-table.vue'
 import cusPjTable from '@/components/my-ui/cus-pj-table.vue'
 import ktAnimeScroll from '@/components/kt-ui/kt-anime-scroll.vue'
+import { getRealMessage, getAttendanceDetail, getAlarmInfo} from '@/axios/safety-control-factory.js'
+import TimerManager from '@/utils/timerManager'
 
 const data = ref({
   section1: {
@@ -13,18 +15,18 @@ const data = ref({
         img: 'bg-[url(@/assets/img/8-1.png)]',
         textColor: 'text-[#62EFD3]',
       },
-      请假人数: {
-        name: '请假人数',
-        value: 3,
-        img: 'bg-[url(@/assets/img/8-2.png)]',
-        textColor: 'text-[#62EFD3]',
-      },
-      离职人数: {
-        name: '离职人数',
-        value: 6,
-        img: 'bg-[url(@/assets/img/8-3.png)]',
-        textColor: 'text-[#FFB348]',
-      },
+      // 请假人数: {
+      //   name: '请假人数',
+      //   value: 3,
+      //   img: 'bg-[url(@/assets/img/8-2.png)]',
+      //   textColor: 'text-[#62EFD3]',
+      // },
+      // 离职人数: {
+      //   name: '离职人数',
+      //   value: 6,
+      //   img: 'bg-[url(@/assets/img/8-3.png)]',
+      //   textColor: 'text-[#FFB348]',
+      // },
     },
     2: {
       中段1: {
@@ -49,6 +51,14 @@ const data = ref({
       },
       中段6: {
         name: '中段6',
+        value: 120,
+      },
+      中段7: {
+        name: '中段7',
+        value: 120,
+      },
+      中段8: {
+        name: '中段8',
         value: 120,
       },
     },
@@ -77,14 +87,14 @@ const data = ref({
         label: '告警时间',
         prop: 'k4',
         dir: 'center',
-        width: 1,
+        width: 3,
       },
-      {
-        label: '处置状态',
-        prop: 'k5',
-        dir: 'center',
-        width: 1,
-      },
+      // {
+      //   label: '处置状态',
+      //   prop: 'k5',
+      //   dir: 'center',
+      //   width: 1,
+      // },
     ],
     data: [
       {
@@ -92,49 +102,49 @@ const data = ref({
         k2: 'XXX',
         k3: 'XXX',
         k4: 'XXXXXX',
-        k5: 'XXX',
+        // k5: 'XXX',
       },
       {
         k1: '2',
         k2: 'XXX',
         k3: 'XXX',
         k4: 'XXXXXX',
-        k5: 'XXX',
+        // k5: 'XXX',
       },
       {
         k1: '3',
         k2: 'XXX',
         k3: 'XXX',
         k4: 'XXXXXX',
-        k5: 'XXX',
+        // k5: 'XXX',
       },
       {
         k1: '4',
         k2: 'XXX',
         k3: 'XXX',
         k4: 'XXXXXX',
-        k5: 'XXX',
+        // k5: 'XXX',
       },
       {
         k1: '5',
         k2: 'XXX',
         k3: 'XXX',
         k4: 'XXXXXX',
-        k5: 'XXX',
+        // k5: 'XXX',
       },
       {
         k1: '6',
         k2: 'XXX',
         k3: 'XXX',
         k4: 'XXXXXX',
-        k5: 'XXX',
+        // k5: 'XXX',
       },
       {
         k1: '7',
         k2: 'XXX',
         k3: 'XXX',
         k4: 'XXXXXX',
-        k5: 'XXX',
+        // k5: 'XXX',
       },
     ],
   },
@@ -175,6 +185,14 @@ const allRightContents = ref([
 ])
 const rightContent1 = ref(allRightContents.value[0])
 
+// 视频连接状态
+const videoConnected = ref(false)
+
+// 视频连接成功回调
+const handleVideoConnected = (status) => {
+  videoConnected.value = status
+}
+
 const changeActive = (index) => {
   // 1️⃣ 重置所有 active
   Object.keys(data.value.section3).forEach((key) => {
@@ -184,6 +202,9 @@ const changeActive = (index) => {
   // 2️⃣ 设置当前 active
   data.value.section3[index].active = true
 
+  // 重置连接状态
+  videoConnected.value = false
+
   // 3️⃣ 切换内容（index 从 1 开始，要 -1）
   rightContent1.value = allRightContents.value[index - 1]
 }
@@ -191,16 +212,122 @@ const changeActive = (index) => {
 let timer = null
 let currentIndex = 1
 
+// 获取各中段人数
+const fetchRealMessage = async () => {
+  const params = {
+    personState: -1, //人员状态-1.全部0.地面1.井口2.井下（必传）
+    cardType: 0, //0.人员1.车辆（必传）
+  }
+
+  const res = await getRealMessage(params)
+  if (res.data.code === 200) {
+    const wzData = res.data.data.GisWzPersonInfos || []
+
+    const areaCount = {}
+
+    wzData.forEach((item) => {
+      const wzName = item.Wz
+      const personCount = item.WzNowNum || 0
+
+      // 提取区域编号（如 "045"）
+      const areaMatch = wzName.match(/^(\d+)/)
+      if (areaMatch) {
+        const areaNumber = areaMatch[1]
+
+        if (areaCount[areaNumber]) {
+          areaCount[areaNumber] += personCount
+        } else {
+          areaCount[areaNumber] = personCount
+        }
+      }
+    })
+
+    // 将结果转换为 section1[2] 的格式
+    data.value.section1[2] = {}
+    Object.keys(areaCount).forEach((key) => {
+      data.value.section1[2][`${key}中段`] = {
+        name: `${key}中段`,
+        value: areaCount[key],
+      }
+    })
+  }
+}
+
+// 获取在岗行人数
+const fetchAttendanceDetail = async () => {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  
+  const beginTime = `${year}-${month}-${day} 00:00:00`
+  const endTime = `${year}-${month}-${day} 23:59:59`
+
+  const params = {
+    queryJson: JSON.stringify({ BeginTime: beginTime, EndTime: endTime }),
+    page: 1,
+    rows: 999,
+  }
+
+  const res = await getAttendanceDetail(params)
+  if (res.data.code === 200) {
+    data.value.section1[1]['在岗人数'].value = res.data.data?.Records || 0
+  }
+}
+
+// 获取告警列表
+const fetchAlarmInfo = async () => {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+
+  const beginTime = `${year}-${month}-${day} 00:00:00`
+  const endTime = `${year}-${month}-${day} 23:59:59`
+
+  const params = {
+    queryJson: JSON.stringify({ BeginTime: beginTime, EndTime: endTime }),
+    page: 1,
+    rows: 999,
+  }
+  const res = await getAlarmInfo(params)
+  console.log('告警列表 res:', res)
+  if (res.data.code === 200) {
+    const list = res.data.data?.rows || []
+    data.value.section2.data = list.map((item, index) => {
+      const wzName = item.Wz ? item.Wz.replace(/\[.*?\]/g, '') : ''
+      return {
+        k1: index + 1,
+        k2: item.AlarmTypeName || '',
+        k3: wzName,
+        k4: item.StartTime || '',
+      }
+    })
+  }
+}
+
 onMounted(() => {
+  fetchRealMessage()
+  fetchAttendanceDetail()
+  fetchAlarmInfo()
+
+  TimerManager.addTimer('fetchRealMessage', fetchRealMessage)
+  TimerManager.addTimer('fetchAttendanceDetail', fetchAttendanceDetail)
+  TimerManager.addTimer('fetchAlarmInfo', fetchAlarmInfo)
+  
   timer = setInterval(() => {
     currentIndex++
     if (currentIndex > 5) currentIndex = 1
     changeActive(currentIndex)
-  }, 15000) // 15 秒
+  }, 60000) // 1分钟
 })
 
 onUnmounted(() => {
   clearInterval(timer)
+  TimerManager.clearTimer('fetchRealMessage')
+  TimerManager.clearTimer('fetchAttendanceDetail')
+  TimerManager.clearTimer('fetchAlarmInfo')
+
 })
 </script>
 <template>
@@ -217,7 +344,7 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-      <div class="grid grid-cols-3 grid-rows-2 gap-x-[70px] ml-[38px]">
+      <div class="h-[170px] grid grid-cols-3 gap-x-[70px] ml-[38px] overflow-y-auto">
         <div v-for="(item, index) in data.section1[2]" key="index" class="mt-[20px]">
           <div class="w-[162px] h-[64px] kt-bg-full bg-[url(@/assets/img/9.png)]">
             <div class="pl-[26px] text-[24px]">{{ item.name }}</div>
@@ -230,7 +357,7 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
-    <cus-title title="告警列表" />
+    <cus-title title="当前告警列表" />
     <div class="bg-[url('@/assets/img/1.png')] h-[312px] w-[700px] kt-bg-full">
       <div class="w-[680px] h-[271px] ml-[21px] mt-[14px]">
         <cus-pj-table :columns="data.section2.columns" :data="data.section2.data" gap="4px"></cus-pj-table>

@@ -2,7 +2,8 @@
 import cusTitle from '@/components/my-ui/cus-title.vue'
 import ktTable from '@/components/my-ui/kt-table.vue'
 import cusPjTable from '@/components/my-ui/cus-pj-table.vue'
-import { getGroupStatus } from '@/axios/production-management'
+import { getGroupStatus,getDefaultEntity } from '@/axios/production-management'
+import TimerManager from '@/utils/timerManager'
 
 const data = ref({
   section1: {
@@ -24,77 +25,42 @@ const data = ref({
   section2: {
     1: {
       name: '当前班次',
-      type: '中班',
+      type: '早班',
     },
-    2: {
-      值班: {
-        name: '值 班',
-        1: {
-          值班长: {
-            manage: '值班长',
-            name: '王志峰',
-            job: '矿长',
-          },
-          副值班长: {
-            manage: '副值班长',
-            name: '邓飞',
-            job: '班长',
-          },
-        },
-      },
-      带班: {
-        name: '带 班',
-        1: {
-          早班: {
-            type: '早班',
-            name: '邓飞',
-            job: 'xx职位',
-            textClass: 'text-[#FFFFFF]',
-          },
-          中班: {
-            type: '中班',
-            name: '邓飞',
-            job: 'xx职位',
-            textClass: 'text-[#62EFD3]',
-          },
-          晚班: {
-            type: '晚班',
-            name: '邓飞',
-            job: 'xx职位',
-            textClass: 'text-[#83DAFF]',
-          },
-        },
-      },
-    },
+    shifts: [
+      { name: '早班', start: '0:00', end: '08:00', active: true },
+      { name: '中班', start: '08:00', end: '16:00', active: false },
+      { name: '晚班', start: '16:00', end: '23:59', active: false },
+    ],
   },
   section3: {
     1: {
       name: '设备总数',
-      total: 698,
+      total: 31,
       unit: '个',
     },
     2: {
       设备开机: {
         name: '设备开机',
-        total: 698,
+        total: 31,
         unit: '个',
         textColor: '#62EFD3',
       },
       设备停机: {
         name: '设备停机',
-        total: 698,
+        total: 0,
         unit: '个',
         textColor: '#FFB348',
       },
       设备故障: {
         name: '设备故障',
-        total: 33,
+        total: 0,
         unit: '个',
         textColor: '#FF6969',
       },
       设备异常: {
         name: '设备异常',
-        total: 33,
+        total: 0,
         unit: '个',
         textColor: '#D5C944',
       },
@@ -112,7 +78,69 @@ const GroupStatus = async () => {
   }
 }
 
-GroupStatus()
+// 获取默认班次
+const fetchDefaultEntity = async () => {
+  const res = await getDefaultEntity()
+  if (res.data.code === 200) {
+    const d = res.data.data
+    const shifts = []
+    
+    // 获取当前时间（分钟数）用于匹配
+    const now = new Date()
+    const nowMinutes = now.getHours() * 60 + now.getMinutes()
+
+    // 循环处理三个班次
+    for (let i = 1; i <= 3; i++) {
+      const name = d[`bcmc${i}`]
+      const start = d[`kssj${i}`]
+      const end = d[`jssj${i}`]
+      
+      if (name && start && end) {
+        // 计算开始和结束时间的分钟数
+        const [sH, sM] = start.split(':').map(Number)
+        const [eH, eM] = end.split(':').map(Number)
+        let startMin = sH * 60 + sM
+        let endMin = eH * 60 + eM
+
+        // 处理跨天情况（例如 16:00 - 00:00）
+        let active = false
+        if (startMin <= endMin) {
+          active = nowMinutes >= startMin && nowMinutes < endMin
+        } else {
+          // 跨天逻辑
+          active = nowMinutes >= startMin || nowMinutes < endMin
+        }
+
+        shifts.push({
+          name,
+          start,
+          end,
+          active
+        })
+
+        if (active) {
+          data.value.section2['1'].type = name
+        }
+      }
+    }
+    
+    data.value.section2.shifts = shifts
+  }
+}
+
+// GroupStatus()
+onMounted(() => {
+  GroupStatus()
+  fetchDefaultEntity()
+
+  TimerManager.addTimer('groupStatus', GroupStatus)
+  TimerManager.addTimer('defaultEntity', fetchDefaultEntity)
+})
+
+onUnmounted(() => {
+  TimerManager.clearTimer('groupStatus')
+  TimerManager.clearTimer('defaultEntity')
+})
 </script>
 <template>
   <div class="w-[700px] top-[117px] right-[44px] absolute flex flex-col">
@@ -133,46 +161,37 @@ GroupStatus()
     </div>
     <!-- 值带班信息 -->
     <cus-title title="值带班信息" position="right" />
-    <div class="bg-[url('@/assets/img/1.png')] h-[508px] w-[700px] kt-bg-full flex flex-col items-center justify-around">
-      <div class="w-[660px] h-[84px] bg-[url('@/assets/img/22-1.png')] mt-[20px] flex items-center ml-[20px]">
-        <span class="ml-[13px] text-[28px] tracking-[2px] font-[NotoSansSC]">{{ data.section2['1'].name }}</span>
-        <sapn class="text-[36px] text-[#83DAFF] ml-[382px]">{{ data.section2['1'].type }}</sapn>
+    <div class="bg-[url('@/assets/img/1.png')] h-[508px] w-[700px] kt-bg-full flex flex-col items-center px-[20px] py-[30px]">
+      <!-- 当前班次头部 -->
+      <div class="w-full h-[80px] bg-[url('@/assets/img/production/title.png')] flex items-center justify-between px-[30px] mb-[40px] relative">
+        <div class="flex items-center gap-[15px]">
+          <span class="text-[32px] font-bold">当前班次</span>
+        </div>
+        <span class="text-[36px] text-[#83DAFF] font-bold mr-[58px]">{{ data.section2['1'].type }}</span>
       </div>
-      <!-- 值班 -->
-      <div class="grid grid-cols-6 grid-rows-2 gap-y-[13px]">
-        <div
-          class="w-[80px] h-[129px] bg-[url('@/assets/img/28-1.png')] kt-bg-full text-[28px] flex items-center justify-center vertical-text [writing-mode:vertical-lr] row-span-2 col-span-1"
-        >
-          {{ data.section2[2].值班.name }}
+
+      <!-- 班次表格 -->
+      <div class="w-full flex flex-col gap-[15px]">
+        <!-- 表头 -->
+        <div class="flex justify-end gap-[20px] pr-[20px]">
+          <div class="w-[254px] h-[66px] bg-[url('@/assets/img/production/bg.png')] kt-flex text-[#FFFFFF] text-[24px] relative">开始</div>
+          <div class="w-[254px] h-[66px] bg-[url('@/assets/img/production/bg.png')] kt-flex text-[#62EFD3] text-[24px] relative">结束</div>
         </div>
+
+        <!-- 数据行 -->
         <div
-          v-for="(item, key, i) in data.section2[2].值班[1]"
-          :key="key"
-          class="col-span-5 w-[570px] h-[58px] bg-[url('@/assets/img/28-2.png')] kt-bg-full flex items-center justify-around text-[24px]"
-          :class="[i === 0 ? 'row-span-1' : 'col-start-2']"
+          v-for="(item, index) in data.section2.shifts"
+          :key="index"
+          class="w-full h-[73px] bg-[url(@/assets/img/production/bg2.png)] flex items-center border"
+          :class="[item.active ? 'border-[#FFFFFF] border-[3px]' : '']"
         >
-          <span>{{ item.manage }}</span>
-          <span>{{ item.name }}</span>
-          <span>{{ item.job }}</span>
-        </div>
-      </div>
-      <div class="w-[672px] h-[12px] bg-[url('@/assets/img/29.png')] kt-bg-full"></div>
-      <!-- 带班 -->
-      <div class="grid grid-cols-6 grid-rows-3 gap-y-[15px]">
-        <div
-          class="w-[80px] h-[182px] bg-[url('@/assets/img/30-1.png')] kt-bg-full text-[28px] flex items-center justify-center vertical-text [writing-mode:vertical-lr] row-span-3 col-span-1"
-        >
-          {{ data.section2[2].带班.name }}
-        </div>
-        <div
-          v-for="(item, key, i) in data.section2[2].带班[1]"
-          :key="key"
-          class="col-span-5 w-[570px] h-[58px] bg-[url('@/assets/img/30-2.png')] kt-bg-full flex items-center justify-around text-[24px]"
-          :class="[i === 0 ? 'row-span-1' : 'col-start-2']"
-        >
-          <span :class="item.textClass" class="flex-1 flex justify-center items-center">{{ item.type }}</span>
-          <span class="flex-2 flex justify-center items-center">{{ item.name }}</span>
-          <span class="flex-2 flex justify-center items-center">{{ item.job }}</span>
+          <div class="w-[120px] h-full flex items-center justify-center text-[28px] relative">
+            {{ item.name }}
+          </div>
+          <div class="flex-1 flex items-center justify-around text-[28px] px-[40px]">
+            <span>{{ item.start }}</span>
+            <span>{{ item.end }}</span>
+          </div>
         </div>
       </div>
     </div>

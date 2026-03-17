@@ -3,9 +3,12 @@ import comLeft from './comps/comLeft.vue'
 import comRight from './comps/comRight.vue'
 import { watchUEEvents, sendToUE } from '@/ue'
 import cusButton from '@/components/my-ui/cus-button.vue'
+import {useStore} from '@/stores/index'
 
 const selectedRoam = ref('全部巷道')
 const selectedAll = ref(false)
+const store = useStore()
+
 const data = ref({
   day: { data1: 0, data2: 0, data3: 0, data4: 5, data5: 5, data6: 5 },
   roam: {
@@ -116,16 +119,16 @@ const data = ref({
       icon1: 'bg-[url(@/assets/img/left1/4.png)]',
       icon2: 'bg-[url(@/assets/img/left1/4-c.png)]',
     },
-    通讯: {
-      name: '通讯',
-      active: false,
-      bg1: 'bg-[url(@/assets/img/left1/1.png)]',
-      bg2: 'bg-[url(@/assets/img/left1/1-c.png)]',
-      selected1: 'bg-[url(@/assets/img/left1/2.png)]',
-      selected2: 'bg-[url(@/assets/img/left1/2-c.png)]',
-      icon1: 'bg-[url(@/assets/img/left1/5.png)]',
-      icon2: 'bg-[url(@/assets/img/left1/5-c.png)]',
-    },
+    // 通讯: {
+    //   name: '通讯',
+    //   active: false,
+    //   bg1: 'bg-[url(@/assets/img/left1/1.png)]',
+    //   bg2: 'bg-[url(@/assets/img/left1/1-c.png)]',
+    //   selected1: 'bg-[url(@/assets/img/left1/2.png)]',
+    //   selected2: 'bg-[url(@/assets/img/left1/2-c.png)]',
+    //   icon1: 'bg-[url(@/assets/img/left1/5.png)]',
+    //   icon2: 'bg-[url(@/assets/img/left1/5-c.png)]',
+    // },
   },
 })
 
@@ -195,7 +198,7 @@ const handleLeaveRoam = () => {
     </div>
   </div>
   <!-- 巷道选择 -->
-  <cus-button />
+  <cus-button v-if="store.selectScene === '井下场景'" />
   <!-- <div class="absolute bottom-[141px] left-[767px] w-[208px] h-[56px] bg-[url('@/assets/img/20.png')] z-3" @click="handleAll()">
     <span class="text-[24px] h-[56px] flex items-center justify-center">全部巷道</span>
   </div>

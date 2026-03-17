@@ -10,6 +10,7 @@ const isRoamActive = ref(false)
 
 // 接收漫游状态变化
 const handleRoamChange = (roamState) => {
+
   isRoamActive.value = roamState
   console.log('漫游状态:', roamState)
 }
@@ -66,11 +67,13 @@ onMounted(() => {
       章源钨业新安子矿业综合管控平台
     </div> -->
     <kt-nav @nav-change="handleNavChange" @roam-change="handleRoamChange"></kt-nav>
-    <router-view v-slot="{ Component, route }" v-if="!isRoamActive">
-      <keep-alive include="home">
-        <component :is="Component" :key="route.name" />
-      </keep-alive>
-    </router-view>
+    <div v-show="!isRoamActive">
+      <router-view v-slot="{ Component, route }">
+        <keep-alive include="home">
+          <component :is="Component" :key="route.name" />
+        </keep-alive>
+      </router-view>
+    </div>
     <!-- <ModelHtml v-if="isModelHtmlRoute" /> -->
   </div>
 </template>

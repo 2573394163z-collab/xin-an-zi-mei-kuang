@@ -6,6 +6,7 @@ import { createOption2 } from './createOption'
 import cusTable2 from '@/components/my-ui/cus-table2.vue'
 import ktAnimeScroll from '@/components/kt-ui/kt-anime-scroll.vue'
 import { getAlarmList, getPowerConsumptionAnalysis } from '@/axios/environmental-regulation'
+import TimerManager from '@/utils/timerManager'
 
 const data = ref({
   section1: {
@@ -164,15 +165,31 @@ const powerConsumptionAnalysis = async () => {
   const res = await getPowerConsumptionAnalysis()
   if (res.data.code === 200) {
     const result = res.data.data
-    const totalPower = result['本月总耗电量数据统计'];
-    
-    data.value.section2['1'].total = totalPower ? parseFloat(totalPower.value).toFixed(2) : '--';
+    const totalPower = result['本月总耗电量数据统计']
+
+    const powerValue = typeof totalPower === 'string' ? totalPower : totalPower?.value || '--'
+
+    // 转换并格式化
+    data.value.section2['1'].total = powerValue !== '--' ? parseFloat(powerValue).toFixed(2) : '--'
 
     data.value.section2[2].options.option1 = createOption2(transformData(result['电力近七天消耗曲线']))
   }
 }
-alarmList()
-powerConsumptionAnalysis()
+// alarmList()
+// powerConsumptionAnalysis()
+// 组件挂载时设置定时器
+onMounted(() => {
+  alarmList()
+  powerConsumptionAnalysis()
+
+  TimerManager.addTimer('alarmList', alarmList)
+  TimerManager.addTimer('powerConsumptionAnalysis', powerConsumptionAnalysis)
+})
+
+onUnmounted(() => {
+  TimerManager.clearTimer('alarmList')
+  TimerManager.clearTimer('powerConsumptionAnalysis')
+})
 </script>
 <template>
   <div class="w-[700px] top-[117px] right-[44px] absolute flex flex-col">
@@ -191,10 +208,12 @@ powerConsumptionAnalysis()
     <!-- 水资源与排放 -->
     <cus-title title="电力能耗分析" position="right" />
     <div class="bg-[url('@/assets/img/1.png')] h-[311px] w-[700px] kt-bg-full flex flex-col items-center justify-around">
-      <div class="w-[660px] h-[84px] bg-[url('@/assets/img/23.png')] mt-[20px] flex items-center">
-        <div class="ml-[13px] text-[28px] tracking-[2px] font-[NotoSansSC]">{{ data.section2['1'].name }}</div>
-        <div class="text-[48px] text-[#83DAFF] ml-[292px]">{{ data.section2['1'].total }}</div>
-        <div class="text-[20px] ml-[7px] mt-[22px]">{{ data.section2['1'].unit }}</div>
+      <div class="w-[660px] h-[84px] bg-[url('@/assets/img/23.png')] mt-[20px] flex items-center justify-between">
+        <div class="w-[180px] ml-[13px] text-[28px] tracking-[2px] font-[NotoSansSC]">{{ data.section2['1'].name }}</div>
+        <div class="flex mr-[20px] items-center">
+          <div class="text-[48px] text-[#83DAFF]">{{ data.section2['1'].total }}</div>
+          <div class="text-[20px] ml-[7px]">{{ data.section2['1'].unit }}</div>
+        </div>
       </div>
       <div class="w-[700px] h-[139px] pointer-events-auto">
         <kt-echart :option="data.section2[2].options.option1" />
@@ -231,8 +250,8 @@ powerConsumptionAnalysis()
                 item.status === '超下限'
                   ? 'bg-[url(@/assets/img/35-1.png)]'
                   : item.status === '超上限'
-                    ? 'bg-[url(@/assets/img/35-2.png)]'
-                    : 'bg-[url(@/assets/img/35-3.png)]',
+                  ? 'bg-[url(@/assets/img/35-2.png)]'
+                  : 'bg-[url(@/assets/img/35-3.png)]',
               ]"
             >
               <div class="ml-[64px] text-[24px] h-[50px] flex items-center">
@@ -272,9 +291,7 @@ powerConsumptionAnalysis()
   width: 660px;
   height: 54px;
   background: linear-gradient(180deg, rgba(0, 123, 215, 0) 0%, rgba(0, 123, 215, 0.2) 100%), rgba(7, 7, 17, 0.48);
-  box-shadow:
-    0px 3 12px 0px rgba(0, 123, 215, 0.4),
-    0px 2 5px 0px rgba(0, 123, 215, 0.3);
+  box-shadow: 0px 3 12px 0px rgba(0, 123, 215, 0.4), 0px 2 5px 0px rgba(0, 123, 215, 0.3);
   border-radius: 4px 4px 4px 4px;
   border: 2px solid #088bdc;
 }

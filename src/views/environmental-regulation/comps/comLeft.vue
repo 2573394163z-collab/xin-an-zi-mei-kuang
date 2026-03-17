@@ -3,6 +3,7 @@ import cusTitle from '@/components/my-ui/cus-title.vue'
 import KtEchart from '@/components/utils-ui/kt-echart.vue'
 import { createOption1 } from './createOption'
 import { getEnvMonitoring } from '@/axios/environmental-regulation'
+import TimerManager from '@/utils/timerManager'
 
 const data = ref({
   section1: {
@@ -185,14 +186,14 @@ const data = ref({
   section2: {
     1: {
       name: '设备总数',
-      total: 698,
+      total: 70,
       unit: '个',
     },
     2: {
       1: {
         name: '风速感应器',
-        service: 1221,
-        alarm: 212,
+        service: 18, //1221
+        alarm: 0, //212
         unit: '个',
         icon: 'bg-[url(@/assets/img/22-2.png)]',
         color: 'text-[#62EFD3]',
@@ -202,8 +203,8 @@ const data = ref({
       },
       2: {
         name: '识别定位器',
-        service: 1221,
-        alarm: 212,
+        service: 34,
+        alarm: 0,
         unit: '个',
         icon: 'bg-[url(@/assets/img/22-3.png)]',
         color: 'text-[#62EFD3]',
@@ -211,8 +212,8 @@ const data = ref({
       },
       3: {
         name: '一氧化碳',
-        service: 1221,
-        alarm: 212,
+        service: 13,
+        alarm: 0,
         unit: '个',
         icon: 'bg-[url(@/assets/img/22-4.png)]',
         color: 'text-[#62EFD3]',
@@ -220,8 +221,8 @@ const data = ref({
       },
       4: {
         name: '压力传感器',
-        service: 1221,
-        alarm: 212,
+        service: 2,
+        alarm: 0,
         unit: '个',
         icon: 'bg-[url(@/assets/img/22-5.png)]',
         color: 'text-[#62EFD3]',
@@ -229,8 +230,8 @@ const data = ref({
       },
       5: {
         name: '扬尘噪声监测',
-        service: 1221,
-        alarm: 212,
+        service: 3,
+        alarm: 0,
         unit: '个',
         icon: 'bg-[url(@/assets/img/22-6.png)]',
         color: 'text-[#62EFD3]',
@@ -290,8 +291,17 @@ const EnvMonitoring = async () => {
     })
   }
 }
+// 组件挂载时设置定时器
+onMounted(() => {
+  EnvMonitoring()
 
-EnvMonitoring()
+  TimerManager.addTimer('envMonitoring', EnvMonitoring)
+})
+
+onUnmounted(() => {
+  TimerManager.clearTimer('envMonitoring')
+})
+
 </script>
 <template>
   <div class="w-[700px] top-[117px] left-[44px] absolute flex flex-col pointer-events-auto">

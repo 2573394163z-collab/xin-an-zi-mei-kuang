@@ -3,7 +3,7 @@ const CUS_ENV = {}
 // 自定义环境变量
 if (import.meta.env.DEV) {
   // 开发环境接口地址
-  CUS_ENV.API1_URL = 'http://10.1.10.43:8099' //http://10.1.10.43:8099  http://rea6e797.natappfree.cc
+  CUS_ENV.API1_URL = 'http://10.1.10.91:8099' //http://10.1.10.43:8099  http://rea6e797.natappfree.cc
 }
 else {
   // 生产环境接口地址

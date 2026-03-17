@@ -4,6 +4,7 @@ import { ref, defineEmits, defineProps } from 'vue'
 import { sliceArr } from '@/utils/num'
 import { watchUEEvents, sendToUE } from '@/ue'
 import { useRoute, useRouter } from 'vue-router'
+import {useStore} from '@/stores/index'
 
 const route = useRoute()
 const router = useRouter()
@@ -11,6 +12,7 @@ const routes = ref(router.getRoutes())
 const selectedRoam = ref(false)
 const selectedFactory = ref(true)
 const selectedMine = ref(false)
+const store = useStore()
 // const selected = ref({
 //   安全管控厂区: {
 //     factory: false,
@@ -87,34 +89,36 @@ const handleSelectRoam = (index) => {
 
 // 跳转厂区场景并发送ue消息
 const handleFactoryClick = () => {
-  selectedFactory.value = !selectedFactory.value
-  selectedMine.value = !selectedMine.value
-  // if (route.path === '/safety-control-mine') {
-  //   router.push('/safety-control-factory').catch((err) => {
-  //     console.error('路由跳转失败:', err)
-  //   })
-  // }
-  // console.log('当前路由-------:', route.path)
+  selectedFactory.value = true
+  selectedMine.value = false
+  selectedRoam.value = false // 厂区场景强制关闭漫游
+  store.selectScene = '厂区场景'
+
+  emit('roam-change', false)
+  
   sendToUE(`c1-btn2-type`, { item: '厂区场景', selectedFactory: selectedFactory.value, selectedMine: selectedMine.value })
 }
 // 跳转矿下场景并发送ue消息
 const handleMineClick = () => {
-  selectedFactory.value = !selectedFactory.value
-  selectedMine.value = !selectedMine.value
-  // if (route.path === '/safety-control-factory') {
-  //   router.push('/safety-control-mine').catch((err) => {
-  //     console.error('路由跳转失败:', err)
-  //   })
-  // }
-  // console.log('当前路由-------:', route.path)
+  selectedFactory.value = false
+  selectedMine.value = true
+  selectedRoam.value = false // 初始井下不开启漫游
+  store.selectScene = '井下场景'
+  
   sendToUE(`c1-btn3-type`, { item: '井下场景', selectedFactory: selectedFactory.value, selectedMine: selectedMine.value })
 }
 
 const handleRoamClick = () => {
   selectedRoam.value = !selectedRoam.value
-  // 新增：发射 roam-change 事件
+  // 发射状态改变事件，用于 Layout 隐藏/显示面板
   emit('roam-change', selectedRoam.value)
-  if (!selectedRoam.value) sendToUE(`c1-btn1-type`, { item: '漫游', selected: selectedRoam.value })
+  
+  sendToUE(`c1-btn1-type`, { 
+    item: '漫游', 
+    selectedRoam: selectedRoam.value,
+    selected: selectedRoam.value 
+  })
+  
   if (!selectedRoam.value) {
     Object.values(data.value.roam).forEach((item) => (item.active = false))
   }
@@ -253,10 +257,10 @@ watchEffect(() => {
       </el-carousel>
     </div>
   </nav>
-  <div class="absolute bottom-[55px] left-[1170px] w-[265px] h-[58px] bg-[url('@/assets/img/17.png')] z-3 pointer-events-auto" @click="handleRoamClick()">
+  <div class="absolute bottom-[55px] left-[1170px] w-[265px] h-[58px] bg-[url('@/assets/img/17.png')] z-3 pointer-events-auto" @click="handleRoamClick()" v-if="selectedMine">
     <span class="text-[28px] pl-[49px] pt-[5px]">场景漫游</span>
   </div>
-  <div v-if="selectedRoam" class="absolute bottom-[113px] left-[1220px] w-[208px] h-[404px] bg-[url('@/assets/img/17-1.png')] pointer-events-auto">
+  <div v-if="selectedRoam && selectedMine" class="absolute bottom-[113px] left-[1220px] w-[208px] h-[404px] bg-[url('@/assets/img/17-1.png')] pointer-events-auto z-10">
     <div class="flex items-center justify-center flex-col">
       <div v-for="(item, index) in data.roam" :key="index">
         <div class="w-[202px] h-[50px] flex justify-center items-center text-[24px]" :class="[item.active ? item.bg : '']" @click="handleSelectRoam(index)">

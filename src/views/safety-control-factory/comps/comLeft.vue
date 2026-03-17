@@ -3,6 +3,7 @@ import cusTitle from '@/components/my-ui/cus-title.vue'
 import KtEchart from '@/components/utils-ui/kt-echart.vue'
 import { panel, pie, createOption1 } from './createOption'
 import { getMonitoringAndAlarming, getDeviceSafetyInspection, getPotentialRiskRectification } from '@/axios/safety-control-factory'
+import TimerManager from '@/utils/timerManager'
 
 const select = ref(0)
 const dateType = ref('day')
@@ -57,13 +58,13 @@ const data = ref({
   section1: {
     1: {
       name: '设备总数',
-      total: 698,
+      total: 689,
       unit: '个',
     },
     2: {
       设备开机: {
         name: '设备开机',
-        total: 698,
+        total: 689,
         unit: '个',
         textColor: '#62EFD3',
       },
@@ -273,6 +274,16 @@ onMounted(() => {
   DeviceSafetyInspection()
   echartsData1.value = panel(2.5, 5)
   echartsData2.value = pie(data.value.section3['1'].data)
+  
+  TimerManager.addTimer('monitoringAndAlarming', MonitoringAndAlarming)
+  TimerManager.addTimer('deviceSafetyInspection', DeviceSafetyInspection)
+  TimerManager.addTimer('potentialRiskRectification', PotentialRiskRectification)
+})
+
+onUnmounted(() => {
+  TimerManager.clearTimer('monitoringAndAlarming')
+  TimerManager.clearTimer('deviceSafetyInspection')
+  TimerManager.clearTimer('potentialRiskRectification')
 })
 
 // MonitoringAndAlarming()

@@ -7,14 +7,12 @@
     <title>设备信息弹窗</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <!-- <script  src="/src/env.js"></script> -->
     <style>
         .popup-container {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            /* height: 100%; */
             z-index: 99;
             pointer-events: auto;
             background: url('/assets/img/modelHtml/bg.png') no-repeat center center;
@@ -34,20 +32,6 @@
             flex-direction: column;
             justify-content: center;
         }
-
-        /* .model-card h2 {
-           padding-left: 55px;
-            margin-top: 28px;
-            font-size: 28px;
-            color: #fff;
-            width: 100%;
-            height: 52px;
-            background: url('/assets/img/modelHtml/titleBg.png') no-repeat center center;
-        }
-
-        .model-card h2.alarm-title {
-            background: url('/assets/img/modelHtml/titleBg2.png') no-repeat center center;
-        } */
 
         .info-title {
             padding-left: 85px;
@@ -105,7 +89,6 @@
             opacity: 0.8;
         }
 
-        /* 添加最后一个元素的特殊样式 */
         .info-item:last-child span:last-child {
             font-weight: bold;
             color: #62EFD3;
@@ -128,7 +111,7 @@
                 <div class="info-list">
                     <div class="info-item" v-for="(item, index) in data.data" :key="item.title" :class="{'alarm-danger': hasAlarm}">
                         <span>{{ item.title }}</span>
-                        <span v-if="index === data.data.length - 1"  :class="{'alarm-danger': hasAlarm}">
+                        <span v-if="index === data.data.length - 1" :class="{'alarm-danger': hasAlarm}">
                             {{ item.content }}
                         </span>
                         <span v-else >{{ item.content }}</span>
@@ -138,20 +121,17 @@
         </div>
     </div>
 
-
     <script>
-        //  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'  
-        // window.location.ancestororigins === 'localhost' || window.location.ancestororigins === '127.0.0.1'
+        // 环境配置
         window.__ENV = {
             API1_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                ? 'http://10.1.10.43:8099'
+                ? 'http://10.1.10.91:8099'
                 : 'http://192.168.3.99:8099'
         };
         console.log('window.__ENV:', window.__ENV);
         console.log('API1_URL:', window.__ENV?.API1_URL);
 
-
-        const { createApp, ref } = Vue;
+        const { createApp, ref, onMounted, onUnmounted } = Vue;
 
         // 获取URL参数
         function getUrlParameter(name) {
@@ -161,6 +141,7 @@
             return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
         }
 
+        // API请求函数
         async function getEnvironmentalDeviceById(params) {
             const apiUrl = window.__ENV.API1_URL;
             const response = await axios.get(apiUrl + '/environmentalSupervision/getEnvironmentalDeviceById', { params });
@@ -175,8 +156,8 @@
 
         createApp({
             setup() {
-                // 添加 hasAlarm 到响应式数据中
                 const hasAlarm = ref(false);
+                let timer = null; // 定时器变量
 
                 // 获取URL参数
                 const id = getUrlParameter('deviceId');
@@ -190,13 +171,18 @@
                         { title: '报警状态', content: '--' }
                     ],
                 });
-                // 请求设备数据
-                if (id) {
-                    // 同时请求设备信息和所有实时数据
-                    Promise.all([
-                        getEnvironmentalDeviceById({ id }),
-                        getEnvMonitoring()
-                    ]).then(([deviceRes, monitorRes]) => {
+
+                // 获取设备数据并更新UI的函数
+                const fetchDeviceData = async () => {
+                    if (!id) return;
+
+                    try {
+                        // 同时请求设备信息和所有实时数据
+                        const [deviceRes, monitorRes] = await Promise.all([
+                            getEnvironmentalDeviceById({ id }),
+                            getEnvMonitoring()
+                        ]);
+
                         if (deviceRes.code === 200 && monitorRes.code === 200) {
                             const deviceData = deviceRes.data;
                             const monitorData = monitorRes.data.find(item => item.deviceId === id);
@@ -236,27 +222,47 @@
 
                             // 更新数据
                             data.value.data = infoItems;
-                            hasAlarm.value = alarmStatus; // 更新响应式的 hasAlarm
+                            hasAlarm.value = alarmStatus;
                         } else {
                             throw new Error('获取数据失败');
                         }
-                    }).catch(error => {
+                    } catch (error) {
                         console.error('请求失败:', error);
                         data.value.data = [
                             { title: '设备名称', content: id },
                             { title: '设备编号', content: deviceName },
                             { title: '报警状态', content: '--' }
                         ];
-                        hasAlarm.value = false; // 错误情况下设置为 false
-                    });
-                }
+                        hasAlarm.value = false;
+                    }
+                };
+
+                // 组件挂载时
+                onMounted(() => {
+                    // 立即执行一次数据获取
+                    fetchDeviceData();
+                    
+                    // 设置定时器，每5分钟执行一次
+                    timer = setInterval(() => {
+                        fetchDeviceData();
+                    }, 300000);
+                });
+
+                // 组件卸载时清除定时器
+                onUnmounted(() => {
+                    if (timer) {
+                        clearInterval(timer);
+                        timer = null;
+                    }
+                });
 
                 return {
                     data,
-                    hasAlarm // 确保返回 hasAlarm
+                    hasAlarm
                 };
             }
-        }).mount('#app');</script>
+        }).mount('#app');
+    </script>
 </body>
 
 </html>

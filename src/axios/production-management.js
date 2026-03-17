@@ -11,3 +11,12 @@ export function getGroupStatus(params = {}) {
 export function getProductionProgress(params = {}) {
     return request(`/productionManage/productionProgress`, params, 'get');
 }
+
+// 获取默认班次
+export function getDefaultEntity(params = {}) {
+    const apiUrl = window.kt_config?.api_url || 'http://192.168.3.201:8001'
+    return request(`${apiUrl}/RYDW/Class/GetDefaultEntity`, params, 'post', {
+      isForm: true,
+      needToken: true,
+    })
+}

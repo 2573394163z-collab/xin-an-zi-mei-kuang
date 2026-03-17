@@ -3,6 +3,9 @@ import comLeft from './comps/comLeft.vue'
 import comRight from './comps/comRight.vue'
 import { watchUEEvents, sendToUE } from '@/ue'
 import cusButton from '@/components/my-ui/cus-button.vue'
+import {useStore} from '@/stores/index'
+
+const store = useStore()
 
 const data = ref({
   left1: {
@@ -89,7 +92,7 @@ const handleSelect = (index) => {
     </div>
   </div>
   <!-- 巷道选择 -->
-  <cus-button />
+  <cus-button v-if="store.selectScene === '井下场景'" />
 </template>
 
 <style scoped>
