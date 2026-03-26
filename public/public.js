@@ -9,4 +9,5 @@ window.kt_config = {
   username:"admin1",
   password:"e10adc3949ba59abbe56e057f20f883e",
   api_url: "http://192.168.3.201:8001",
+  showSafety: true,
 };

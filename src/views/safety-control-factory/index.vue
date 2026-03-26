@@ -132,6 +132,7 @@ const data = ref({
   },
 })
 
+const isShowSafetyDays = ref(window.kt_config.showSafety)
 const handleAll = () => {
   selectedAll.value = !selectedAll.value
 }
@@ -185,7 +186,7 @@ const handleLeaveRoam = () => {
   <comLeft class="z-2" />
   <comRight class="z-2" />
   <!-- 安全生产总天数 -->
-  <div class="w-[700px] h-[78px] flex items-center absolute top-[247px] left-[1781px] z-3">
+  <div v-if="isShowSafetyDays" class="w-[700px] h-[78px] flex items-center absolute top-[247px] left-[1781px] z-3">
     <div class="bg">
       <div class="h-[78px] flex justify-center items-center">
         <span class="text-[28px] font-bold">安全生产总天数：</span>
