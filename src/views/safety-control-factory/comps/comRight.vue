@@ -75,7 +75,7 @@ const data = ref({
         label: '告警详情',
         prop: 'k2',
         dir: 'center',
-        width: 1,
+        width: 2,
       },
       {
         label: '告警地点',
