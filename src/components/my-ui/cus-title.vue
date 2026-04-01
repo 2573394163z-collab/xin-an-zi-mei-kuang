@@ -1,8 +1,9 @@
 <script setup>
 import { getExportTemplate, getImportData, getExportData } from '@/axios/handData'
-import { defineProps } from 'vue'
+import { defineEmits, defineProps } from 'vue'
 
 const fileInput = ref(null)
+const emit = defineEmits(['import-success'])
 const props = defineProps({
   title: {
     type: String,
@@ -70,6 +71,7 @@ const importData = async (event) => {
 
     if (res.data.code === 200) {
       console.log('上传成功 ✅')
+      emit('import-success', { type })
     } else {
       console.error('上传失败 ❌', res.data.message)
     }

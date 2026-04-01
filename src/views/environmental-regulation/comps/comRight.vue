@@ -5,16 +5,16 @@ import cusPjTable from '@/components/my-ui/cus-pj-table.vue'
 import { createOption2 } from './createOption'
 import cusTable2 from '@/components/my-ui/cus-table2.vue'
 import ktAnimeScroll from '@/components/kt-ui/kt-anime-scroll.vue'
-import { getAlarmList, getPowerConsumptionAnalysis } from '@/axios/environmental-regulation'
+import { getAlarmList, getPowerConsumptionAnalysis, getWaterResources } from '@/axios/environmental-regulation'
 import TimerManager from '@/utils/timerManager'
 
 const data = ref({
   section1: {
+    // 1: {
+    //   value: '92%',
+    // },
     1: {
-      value: '92%',
-    },
-    2: {
-      name: '废水排放量',
+      name: '明渠累计流量小数点',
       value: '18899',
       unit: 'm³',
     },
@@ -153,12 +153,41 @@ const alarmList = async () => {
   }
 }
 
+
+
+// ================== 获取水资源与排放数据 ==================
+// 格式化数字为"万"单位的函数
+const formatNumberToWan = (num, decimals = 2) => {
+  if (num === null || num === undefined || isNaN(num)) {
+    return num
+  }
+  
+  const wan = 10000
+  if (Math.abs(num) < wan) {
+    return num
+  }
+  
+  // 使用指定的保留小数位数
+  const formatted = (num / wan).toFixed(decimals)
+  return `${formatted}万`
+}
+const waterResourcesList = async () => {
+  const res = await getWaterResources()
+  if (res.data.code === 200) {
+    const result = res.data.data
+    const formattedValue = formatNumberToWan(result)
+    
+    data.value.section1['1'].value = formattedValue||0
+  }
+}
+
+
 // 数据转换函数
 const transformData = (rawData) => {
   console.log('rawData: ', rawData)
   return rawData.map((item) => ({
     date: item.record_date.split('-').slice(1).join('/'), // 将日期格式转换为 MM/DD
-    value: parseFloat(item.data_increment).toFixed(2), // 转换为浮点数并保留两位小数
+    value: Number(parseFloat(item.data_increment).toFixed(2)), // 转换为浮点数并保留两位小数
   }))
 }
 const powerConsumptionAnalysis = async () => {
@@ -170,9 +199,10 @@ const powerConsumptionAnalysis = async () => {
     const powerValue = typeof totalPower === 'string' ? totalPower : totalPower?.value || '--'
 
     // 转换并格式化
-    data.value.section2['1'].total = powerValue !== '--' ? parseFloat(powerValue).toFixed(2) : '--'
+    data.value.section2['1'].total = powerValue !== '--' ? parseFloat(powerValue).toFixed(2) : '--' 
 
     data.value.section2[2].options.option1 = createOption2(transformData(result['电力近七天消耗曲线']))
+    console.log('data.value.section2[2].options.option1: ', data.value.section2[2].options.option1)
   }
 }
 // alarmList()
@@ -181,14 +211,17 @@ const powerConsumptionAnalysis = async () => {
 onMounted(() => {
   alarmList()
   powerConsumptionAnalysis()
+  waterResourcesList()
 
   TimerManager.addTimer('alarmList', alarmList)
   TimerManager.addTimer('powerConsumptionAnalysis', powerConsumptionAnalysis)
+  TimerManager.addTimer('waterResourcesList', waterResourcesList)
 })
 
 onUnmounted(() => {
   TimerManager.clearTimer('alarmList')
   TimerManager.clearTimer('powerConsumptionAnalysis')
+  TimerManager.clearTimer('waterResourcesList')
 })
 </script>
 <template>
@@ -196,16 +229,16 @@ onUnmounted(() => {
     <!-- 水资源与排放  -->
     <cus-title title="水资源与排放" position="right" />
     <div class="bg-[url('@/assets/img/1.png')] h-[180px] w-[700px] kt-bg-full flex items-center justify-around">
-      <div class="w-[207px] h-[207px] bg-[url('@/assets/img/31-1.png')] kt-bg-full flex items-center justify-center">
-        <span class="text-[32px]">{{ data.section1['1'].value }}</span>
+      <div class="w-[105px] h-[104px] bg-[url('@/assets/img/31-1.png')] kt-bg-full flex items-center justify-center">
+        <!-- <span class="text-[32px]">{{ data.section1['1'].value }}</span> -->
       </div>
-      <div class="w-[465px] h-[103px] bg-[url('@/assets/img/31-2.png')] kt-bg-full mr-[30px] flex items-center justify-around">
-        <span class="text-[28px] flex-3 ml-[15px]">{{ data.section1['2'].name }}</span>
-        <span class="text-[48px] text-[#83DAFF] flex-3 flex justify-end">{{ data.section1['2'].value }}</span>
-        <span class="text-[20px] flex-1 flex justify-center">{{ data.section1['2'].unit }}</span>
+      <div class="w-[556px] h-[103px] bg-[url('@/assets/img/31-2.png')] kt-bg-full flex items-center justify-around">
+        <div class="text-[28px] flex-3 ml-[5px] ">{{ data.section1['1'].name }}</div>
+        <div class="text-[40px] text-[#83DAFF] flex-2 flex justify-end">{{ data.section1['1'].value }}</div>
+        <div class="text-[20px] flex-1 flex justify-center">{{ data.section1['1'].unit }}</div>
       </div>
     </div>
-    <!-- 水资源与排放 -->
+    <!-- 电力能耗分析 -->
     <cus-title title="电力能耗分析" position="right" />
     <div class="bg-[url('@/assets/img/1.png')] h-[311px] w-[700px] kt-bg-full flex flex-col items-center justify-around">
       <div class="w-[660px] h-[84px] bg-[url('@/assets/img/23.png')] mt-[20px] flex items-center justify-between">
@@ -219,7 +252,6 @@ onUnmounted(() => {
         <kt-echart :option="data.section2[2].options.option1" />
       </div>
     </div>
-    <!-- 告警列表 -->
     <!-- 告警列表 -->
     <cus-title title="告警列表" position="right" />
 

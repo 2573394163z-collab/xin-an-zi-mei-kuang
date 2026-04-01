@@ -1,261 +1,268 @@
 import * as echarts from 'echarts';
 
-export function panel(value, max) { 
-var value = 2.5;
-var max = 5;
-const option = {
+export function panel(value, max) {
+  var value = value;
+  var max = max;
+  const total = Number(value) || 0;
+  const completed = Number(max) || 0;
+  const progress = total <= 0 ? 0 : Math.min(1, Math.max(0, completed / total));
+  const percentText = (progress * 100).toFixed(0);
+  const gaugeVal = progress * 10;
+  const arcTotal = 1.33;
+  const arcProgress = arcTotal * progress;
+  const option = {
     backgroundColor: 'transparent',
-title: {
-    show: true,
-    text: [
-        '{a|' + (value / max * 100).toFixed(0) + '}',
+    title: {
+      show: true,
+      text: [
+        '{a|' + percentText + '}',
         '{b|%}'
-    ].join(''),
-    left: 'center',  // 使用 center 代替固定数值
-    top: '110px',   // 使用 middle 代替固定数值
-    textStyle: {
+      ].join(''),
+      left: 'center',  // 使用 center 代替固定数值
+      top: '110px',   // 使用 middle 代替固定数值
+      textStyle: {
         color: '#FFFFFF',
         fontSize: 36,
         align: 'center',
         fontFamily: '"Microsoft Yahei","微软雅黑"',
         rich: {
-            a: {
-                fontSize: 36,
-                color: '#FFFFFF',
-                fontFamily: '"Microsoft Yahei","微软雅黑"',
-            },
-            b: {
-                fontSize: 16,
-                color: '#FFFFFF',
-                fontFamily: '"Microsoft Yahei","微软雅黑"',
-                verticalAlign: 'bottom',
-                baseline: 'bottom',
-            },
+          a: {
+            fontSize: 36,
+            color: '#FFFFFF',
+            fontFamily: '"Microsoft Yahei","微软雅黑"',
+          },
+          b: {
+            fontSize: 16,
+            color: '#FFFFFF',
+            fontFamily: '"Microsoft Yahei","微软雅黑"',
+            verticalAlign: 'bottom',
+            baseline: 'bottom',
+          },
         },
+      },
     },
-},
     angleAxis: {
-        axisLine: {
-            show: false,
-        },
-        axisLabel: {
-            show: false,
-        },
-        splitLine: {
-            show: false,
-        },
-        axisTick: {
-            show: false,
-        },
-        min: 0,
-        max: 6.666,
-        // boundaryGap: ['0', '10'],
-        startAngle: 225,
+      axisLine: {
+        show: false,
+      },
+      axisLabel: {
+        show: false,
+      },
+      splitLine: {
+        show: false,
+      },
+      axisTick: {
+        show: false,
+      },
+      min: 0,
+      max: total * 1.33,
+      // boundaryGap: ['0', '10'],
+      startAngle: 225,
     },
     radiusAxis: {
-        type: 'category',
-        axisLine: {
-            show: false,
-        },
-        axisTick: {
-            show: false,
-        },
-        axisLabel: {
-            show: false,
-        },
-        data: ['a', 'b', 'c'],
-        z: 10,
+      type: 'category',
+      axisLine: {
+        show: false,
+      },
+      axisTick: {
+        show: false,
+      },
+      axisLabel: {
+        show: false,
+      },
+      data: ['a', 'b', 'c'],
+      z: 10,
     },
     polar: {
-        radius: '100%',
+      radius: '100%',
     },
     series: [
-        {
-            type: 'bar',
-            data: [, , value],
-            z: 1,
-            coordinateSystem: 'polar',
-            barMaxWidth: 15.2,
-            name: '警告事件',
-            roundCap: true,
-            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+      {
+        type: 'bar',
+        data: [, , completed],
+        z: 1,
+        coordinateSystem: 'polar',
+        barMaxWidth: 15.2,
+        name: '警告事件',
+        roundCap: true,
+        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+          {
+            offset: 0,
+            color: '#3165E1',
+          },
+          {
+            offset: 1,
+            color: '#DAF4FF',
+          },
+        ]),
+        barGap: '-100%',
+      },
+      //   {
+      //       type: 'bar',
+      //       data: [, , ],
+      //       z: 2,
+      //       coordinateSystem: 'polar',
+      //       barMaxWidth: 24.2,
+      //       name: '警告事件',
+      //       roundCap: true,
+      //       color: '#f00',
+      //       barGap: '-100%',
+      //   },
+      {
+        type: 'bar',
+        data: [, , total],
+        z: 0,
+        silent: true,
+        coordinateSystem: 'polar',
+        barMaxWidth: 15.2,
+        name: 'C',
+        roundCap: true,
+        color: '#839299',
+        barGap: '-100%',
+      },
+      {
+        type: 'pie',
+        labelLine: {
+          show: false,
+        },
+        z: 21,
+        radius: 5,
+        data: [
+          {
+            value: 5,
+            itemStyle: {
+              color: new echarts.graphic.LinearGradient(1, 1, 1, 0, [
                 {
-                    offset: 0,
-                    color: '#3165E1',
+                  offset: 0,
+                  color: '#3165E1',
                 },
                 {
-                    offset: 1,
-                    color: '#DAF4FF',
+                  offset: 1,
+                  color: '#DAF4FF',
                 },
-            ]),
-            barGap: '-100%',
+              ]),
+            },
+          },
+        ],
+      },
+      {
+        type: 'pie',
+        labelLine: {
+          show: false,
         },
-        //   {
-        //       type: 'bar',
-        //       data: [, , ],
-        //       z: 2,
-        //       coordinateSystem: 'polar',
-        //       barMaxWidth: 24.2,
-        //       name: '警告事件',
-        //       roundCap: true,
-        //       color: '#f00',
-        //       barGap: '-100%',
-        //   },
-        {
-            type: 'bar',
-            data: [, , max],
-            z: 0,
-            silent: true,
-            coordinateSystem: 'polar',
-            barMaxWidth: 15.2,
-            name: 'C',
-            roundCap: true,
-            color: '#839299',
-            barGap: '-100%',
+        z: 10,
+        radius: 8,
+        data: [
+          {
+            value: 100,
+            itemStyle: {
+              color: '#fff',
+            },
+          },
+        ],
+      },
+      {
+        type: 'gauge',
+        radius: '95%',
+        splitNumber: 0,
+        max: 10,
+        detail: {
+          show: false,
         },
-        {
-            type: 'pie',
+        axisLine: {
+          // 坐标轴线
+          lineStyle: {
+            // 属性lineStyle控制线条样式
+            color: [
+              [0, 'transparent'],
+              [1, 'transparent'],
+            ],
+            width: 10,
+            opacity: 0, //刻度背景宽度
+          },
+        },
+        data: [
+          {
+            name: '',
+            value: gaugeVal,
+          },
+        ],
+        axisTick: {
+          show: false,
+          lineStyle: {
+            color: '#c4c6cc',
+            width: 2,
+          },
+          length: 5,
+          splitNumber: 6,
+        },
+        axisLabel: {
+          show: false,
+          color: '#333',
+          fontSize: 18,
+        },
+        pointer: {
+          show: true,
+          length: '70%',
+          itemStyle: {
+            color: '#ffffff',
+          },
+        },
+      },
+      {
+        type: 'pie',
+        radius: ['88%', '82%'],
+        hoverAnimation: false,
+        startAngle: 225,
+        endAngle: 0,
+        data: [
+          {
+            name: '',
+            value: arcProgress,
+            label: {
+              show: false,
+            },
             labelLine: {
-                show: false,
+              show: false,
             },
-            z: 21,
-            radius: 5,
-            data: [
-                {
-                    value: 5,
-                    itemStyle: {
-                        color: new echarts.graphic.LinearGradient(1, 1, 1, 0, [
-                {
-                    offset: 0,
-                    color: '#3165E1',
-                },
-                {
-                    offset: 1,
-                    color: '#DAF4FF',
-                },
-            ]),
-                    },
-                },
-            ],
-        },
-        {
-            type: 'pie',
+            itemStyle: {
+              color: 'rgba(0,0,0,0)',
+            },
+          },
+          {
+            //画中间的图标
+            name: '',
+            value: 0,
+            label: {
+              position: 'inside',
+              backgroundColor: '#fff',
+              borderRadius: 7,
+              padding: 3,
+              borderWidth: 0,
+              borderColor: '#fff',
+            },
+          },
+          {
+            name: '',
+            value: arcTotal - arcProgress,
+            label: {
+              show: false,
+            },
             labelLine: {
-                show: false,
+              show: false,
             },
-            z: 10,
-            radius: 8,
-            data: [
-                {
-                    value: 100,
-                    itemStyle: {
-                        color: '#fff',
-                    },
-                },
-            ],
-        },
-        {
-            type: 'gauge',
-            radius: '95%',
-            splitNumber: 0,
-            max: 10,
-            detail: {
-                show: false,
+            itemStyle: {
+              color: 'rgba(255,255,255,0)',
             },
-            axisLine: {
-                // 坐标轴线
-                lineStyle: {
-                    // 属性lineStyle控制线条样式
-                    color: [
-                        [0, 'transparent'],
-                        [1, 'transparent'],
-                    ],
-                    width: 10,
-                    opacity: 0, //刻度背景宽度
-                },
-            },
-            data: [
-                {
-                    name: '',
-                    value: value / max*10 ,
-                },
-            ],
-            axisTick: {
-                show: false,
-                lineStyle: {
-                    color: '#c4c6cc',
-                    width: 2,
-                },
-                length: 5,
-                splitNumber: 6,
-            },
-            axisLabel: {
-                show: false,
-                color: '#333',
-                fontSize: 18,
-            },
-            pointer: {
-                show: true,
-                length: '70%',
-                itemStyle: {
-                    color: '#ffffff',
-                },
-            },
-        },
-        {
-            type: 'pie',
-            radius: ['88%', '82%'],
-            hoverAnimation: false,
-            startAngle: 225,
-            endAngle: 0,
-            data: [
-                {
-                    name: '',
-                    value: value / 5,
-                    label: {
-                        show: false,
-                    },
-                    labelLine: {
-                        show: false,
-                    },
-                    itemStyle: {
-                        color: 'rgba(0,0,0,0)',
-                    },
-                },
-                {
-                    //画中间的图标
-                    name: '',
-                    value: 0,
-                    label: {
-                        position: 'inside',
-                        backgroundColor: '#fff',
-                        borderRadius: 7,
-                        padding: 3,
-                        borderWidth: 0,
-                        borderColor: '#fff',
-                    },
-                },
-                {
-                    name: '',
-                    value: 1.33 - value / 5,
-                    label: {
-                        show: false,
-                    },
-                    labelLine: {
-                        show: false,
-                    },
-                    itemStyle: {
-                        color: 'rgba(255,255,255,0)',
-                    },
-                },
-            ],
-        },
+          },
+        ],
+      },
     ],
     tooltip: {
-        show: false,
+      show: false,
     },
-};
-return option;
+  };
+  return option;
 
 }
 

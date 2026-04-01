@@ -142,8 +142,24 @@ const props = defineProps({
   },
 })
 
-// 获取权限信息
-const permissions = ref(JSON.parse(localStorage.getItem('permissions') || '[]'))
+const getPermissions = () => {
+  try {
+    const storedPermissions = localStorage.getItem('permissions')
+    // 如果存在且不为空，尝试解析
+    if (storedPermissions) {
+      return JSON.parse(storedPermissions)
+    }
+    // 默认返回空数组
+    return []
+  } catch (e) {
+    console.error('解析 permissions 失败，已重置为空数组:', e)
+    // 如果解析失败（比如存的是 "/home"），为了安全起见，清除该脏数据并返回空数组
+    localStorage.removeItem('permissions') 
+    return []
+  }
+}
+
+const permissions = ref(getPermissions())
 
 // 过滤路由，只显示有权限的路由
 const filterRoutesByPermissions = (routes) => {

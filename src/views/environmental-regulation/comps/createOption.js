@@ -661,7 +661,7 @@ export const createOption1 = (rawData) => {
 };
 
 export const createOption2 = (rawData) => {
-  const data = rawData || [
+  const data = (rawData || [
     {
       date: "9.1",
       value: "75",
@@ -696,7 +696,10 @@ export const createOption2 = (rawData) => {
       value: "205",
 
     },
-  ];
+  ]).map((item) => ({
+    date: item.date,
+    value: Number(item.value),
+  }));
   const dataset = {
     source: data,
     dimensions: ["date", "value"],
@@ -733,14 +736,19 @@ export const createOption2 = (rawData) => {
           // 正确获取数值
           let value = '';
           if (param.seriesName === '用电量') {
-            value = param.data.value || param.data[1];
+            const vFromDataObject = param?.data?.value;
+            const vFromDataArray = Array.isArray(param?.data) ? param.data[1] : undefined;
+            const vFromValueArray = Array.isArray(param?.value) ? param.value[1] : undefined;
+            const vFromValue = !Array.isArray(param?.value) ? param?.value : undefined;
+            value = vFromDataObject ?? vFromDataArray ?? vFromValueArray ?? vFromValue ?? '';
           }
+          const displayValue = value === '' || value === undefined || value === null || Number.isNaN(value) ? 0 : value;
 
           result += `
             <div style="display: flex; align-items: center; margin: 5px 0;">
               <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${dotColor}; margin-right: 10px;"></span>
               <span style="color: #ffffff; font-size: 20px;">
-                ${param.seriesName}    ${value}${'kWh'}
+                ${param.seriesName}    ${displayValue}${'kWh'}
               </span>
             </div>
           `;
@@ -794,6 +802,7 @@ export const createOption2 = (rawData) => {
       {
         name: "用电量",
         type: "line",
+        encode: { x: "date", y: "value" },
         fontSize: 50,
         smooth: true,
         symbol: "circle",

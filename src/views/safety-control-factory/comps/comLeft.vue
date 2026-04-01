@@ -294,7 +294,7 @@ watch(select, () => {
 <template>
   <div class="w-[700px] top-[117px] left-[44px] absolute flex flex-col">
     <!-- 设备安全检测  -->
-    <cus-title title="设备安全监测" position="left" :download="true" />
+    <cus-title title="设备安全监测" position="left" :download="true" @import-success="DeviceSafetyInspection" />
     <div class="bg-[url('@/assets/img/1.png')] h-[289px] w-[700px] kt-bg-full flex flex-col items-center justify-around">
       <div class="w-[660px] h-[84px] bg-[url('@/assets/img/22-1.png')] mt-[20px] flex items-center">
         <div class="ml-[13px] text-[28px] tracking-[2px] font-[NotoSansSC]">{{ data.section1['1'].name }}</div>
@@ -312,15 +312,15 @@ watch(select, () => {
       </div>
     </div>
     <!-- 隐患治理 -->
-    <cus-title title="隐患治理" position="left" :download="true" />
+    <cus-title title="隐患治理" position="left" :download="true" @import-success="PotentialRiskRectification"/>
     <div class="bg-[url('@/assets/img/1.png')] h-[282px] w-[700px] kt-bg-full flex items-center justify-around">
-      <div class="flex-2">
-        <div class="w-[204px] h-[164px] bg-[url('@/assets/img/3.png')] kt-bg-full relative pl-[8px]">
+      <div class="flex-2 flex flex-col items-center">
+        <div class="w-[204px] h-[164px] bg-[url('@/assets/img/3.png')] kt-bg-full relative pl-[8px] ">
           <div class="w-[200px] h-[200px] pt-[12px] pr-[10px]">
             <kt-echart v-if="echartsData1" :option="echartsData1" />
           </div>
         </div>
-        <div class="w-[157px] h-[38px] bg-[url('@/assets/img/4.png')] kt-bg-full flex items-center justify-center ml-[43px] mt-[33px]">
+        <div class="w-[157px] h-[38px] bg-[url('@/assets/img/4.png')] kt-bg-full flex items-center justify-center mt-[33px]">
           <div class="text-[24px] font-[NotoSansSC] kt-bg-gradient3">隐患整改率</div>
         </div>
       </div>
@@ -336,7 +336,7 @@ watch(select, () => {
       </div>
     </div>
     <!-- 监控与告警 -->
-    <cus-title title="监控与告警" position="left" />
+    <cus-title title="监控与告警" position="left" :download="true" @import-success="MonitoringAndAlarming"/>
     <div class="bg-[url('@/assets/img/1.png')] w-[700px] kt-bg-full flex flex-col gap-[20px] h-[492px]">
       <!-- 第一部分 -->
       <div class="relative w-full h-[151px] mt-[24px]">
@@ -375,7 +375,7 @@ watch(select, () => {
         </div>
 
         <!-- 折线图 -->
-        <div class="w-[700px] h-[290px] mt-[-70px]">
+        <div class="w-[700px] h-[290px] mt-[-70px] pointer-events-auto">
           <kt-echart :option="chartOption" />
         </div>
       </div>

@@ -51,16 +51,23 @@ onMounted(() => {
   let curIdx = -1
   let hover = false
   toolTipTimer = setInterval(() => {
-    const maxLen = props.option.series
-      .filter((i) => i.data)
-      .reduce((acc, cur) => (acc?.data?.length > cur.data.length ? acc.data.length : cur.data.length), -Infinity)
-    if (maxLen) {
-      const maxSeriesIdx = props.option.series.findIndex((i) => i?.data?.length === maxLen)
+    const series = props.option?.series || []
+    const dataset = props.option?.dataset
+    const datasetSource = Array.isArray(dataset) ? dataset[0]?.source : dataset?.source
+    const datasetLen = Array.isArray(datasetSource) ? datasetSource.length : 0
+
+    const seriesWithData = series.filter((s) => Array.isArray(s?.data) && s.data.length > 0)
+    const maxLen = seriesWithData.length
+      ? seriesWithData.reduce((max, cur) => Math.max(max, cur.data.length), 0)
+      : datasetLen
+
+    if (maxLen > 0) {
+      const maxSeriesIdx = seriesWithData.length ? series.findIndex((s) => s?.data?.length === maxLen) : 0
       curIdx = (curIdx + 1) % maxLen
       if (!hover) {
         myChart.dispatchAction({
           type: 'showTip',
-          seriesIndex: maxSeriesIdx,
+          seriesIndex: maxSeriesIdx >= 0 ? maxSeriesIdx : 0,
           dataIndex: curIdx,
         })
       }

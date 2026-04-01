@@ -56,6 +56,9 @@ const data = ref({
     },
   },
 })
+
+let echartsData1 = ref({})
+
 // 获取生产进度
 const ProductionProgress = async () => {
   const res = await getProductionProgress({})
@@ -63,8 +66,8 @@ const ProductionProgress = async () => {
 
   if (res.data.code === 200) {
     const result = res.data.data
-    data.value.section1[1]['当日采掘进尺'].value = result.dailyNum
-    data.value.section1[1]['当月采掘进尺'].value = result.monthlyNum
+    data.value.section1[1]['当日采掘进尺'].value = result.dailyNum||0
+    data.value.section1[1]['当月采掘进尺'].value = result.monthlyNum||0
 
     data.value.section1[2].list.forEach((item) => {
       item.name = ''
@@ -83,17 +86,20 @@ const ProductionExecutionPlan = async () => {
   const res = await getProductionExecutionPlan({})
   if (res.data.code === 200) {
     const { dailyPlanNum, dailyCompleteNum, productionExecutionYearPlanDTO } = res.data.data
+    console.log('dailyPlanNum:', dailyPlanNum)
     data.value.section2['1']['日产量'].planValue = dailyPlanNum
+        console.log('data.value.section2[1][日产量]:', dailyPlanNum)
     data.value.section2['1']['日产量'].actualValue = dailyCompleteNum
+
     data.value.section2['1']['年产量'].planValue = productionExecutionYearPlanDTO.yearPlanNum
     data.value.section2['1']['年产量'].actualValue = productionExecutionYearPlanDTO.yearCompleteNum
+
+    echartsData1.value = panel(data.value.section2['1']['日产量'].actualValue, data.value.section2['1']['日产量'].planValue)
   }
 }
 
-let echartsData1 = ref({})
-
 onMounted(() => {
-  echartsData1.value = panel(2.5, 5)
+  // echartsData1.value = panel(data.value.section2['1']['日产量'].actualValue, data.value.section2['1']['日产量'].planValue)
 })
 
 // ProductionExecutionPlan()

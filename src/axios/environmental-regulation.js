@@ -8,6 +8,11 @@ export function getAlarmList(params = {}) {
     return request(`/environmentalSupervision/alarmList`, params, 'get');
 }
 
+// 获取水资源与排放
+export function getWaterResources(params = {}) {
+    return request(`/environmentalSupervision/waterResources`, params, 'get');
+}
+
 // 电力能耗分析
 export function getPowerConsumptionAnalysis(params = {}) {
     return request(`/environmentalSupervision/powerConsumptionAnalysis`, params, 'get');
@@ -21,3 +26,4 @@ export function getUserDeviceList(params = {}){
 export function getEnvironmentalDeviceById(params = {}){
     return request(`/environmentalSupervision/getEnvironmentalDeviceById`, params, 'get');
 }
+

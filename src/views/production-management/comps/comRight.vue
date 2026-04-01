@@ -200,7 +200,7 @@ onUnmounted(() => {
     <div class="bg-[url('@/assets/img/1.png')] h-[367px] w-[700px] kt-bg-full flex flex-wrap items-center justify-around">
       <div class="w-[660px] h-[84px] bg-[url('@/assets/img/22-1.png')] mt-[20px] flex items-center">
         <span class="ml-[13px] text-[28px] tracking-[2px] font-[NotoSansSC]">{{ data.section3['1'].name }}</span>
-        <sapn class="text-[48px] text-[#83DAFF] ml-[292px]">{{ data.section3['1'].total }}</sapn>
+        <span class="text-[48px] text-[#83DAFF] ml-[292px]">{{ data.section3['1'].total }}</span>
         <span class="text-[20px] ml-[7px] mt-[22px]">{{ data.section3['1'].unit }}</span>
       </div>
       <div class="bg-[url('@/assets/img/2.png')] kt-bg-full w-[651px] h-[130px] flex justify-around pl-[115px]">

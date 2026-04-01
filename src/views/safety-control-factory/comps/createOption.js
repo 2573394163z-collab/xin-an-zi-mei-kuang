@@ -3,12 +3,19 @@ import * as echarts from 'echarts';
 export function panel(value, max) {
   var value = value;
   var max = max;
+  const total = Number(value) || 0;
+  const completed = Number(max) || 0;
+  const progress = total <= 0 ? 0 : Math.min(1, Math.max(0, completed / total));
+  const percentText = (progress * 100).toFixed(0);
+  const gaugeVal = progress * 10;
+  const arcTotal = 1.33;
+  const arcProgress = arcTotal * progress;
   const option = {
     backgroundColor: 'transparent',
     title: {
       show: true,
       text: [
-        '{a|' + (value / max * 100).toFixed(0) + '}',
+        '{a|' + percentText + '}',
         '{b|%}'
       ].join(''),
       left: 'center',  // 使用 center 代替固定数值
@@ -48,7 +55,7 @@ export function panel(value, max) {
         show: false,
       },
       min: 0,
-      max: max * 1.33,
+      max: total * 1.33,
       // boundaryGap: ['0', '10'],
       startAngle: 225,
     },
@@ -72,7 +79,7 @@ export function panel(value, max) {
     series: [
       {
         type: 'bar',
-        data: [, , value],
+        data: [, , completed],
         z: 1,
         coordinateSystem: 'polar',
         barMaxWidth: 15.2,
@@ -103,7 +110,7 @@ export function panel(value, max) {
       //   },
       {
         type: 'bar',
-        data: [, , max],
+        data: [, , total],
         z: 0,
         silent: true,
         coordinateSystem: 'polar',
@@ -177,7 +184,7 @@ export function panel(value, max) {
         data: [
           {
             name: '',
-            value: value / max * 10,
+            value: gaugeVal,
           },
         ],
         axisTick: {
@@ -211,7 +218,7 @@ export function panel(value, max) {
         data: [
           {
             name: '',
-            value: value / 5,
+            value: arcProgress,
             label: {
               show: false,
             },
@@ -237,7 +244,7 @@ export function panel(value, max) {
           },
           {
             name: '',
-            value: 1.33 - value / 5,
+            value: arcTotal - arcProgress,
             label: {
               show: false,
             },
