@@ -106,7 +106,7 @@
             <div class="model-card">
                 <div class="info-title" :class="{ 'alarm-title': hasAlarm }">
                     <div>{{ data.title }}</div>
-                    <div class="info-close"></div>
+                    <div class="info-close" @click="handleClose"></div>
                 </div>
                 <div class="info-list">
                     <div class="info-item" v-for="(item, index) in data.data" :key="item.title" :class="{'alarm-danger': hasAlarm}">
@@ -162,6 +162,7 @@
                 // 获取URL参数
                 const id = getUrlParameter('deviceId');
                 const deviceName = getUrlParameter('deviceName');
+                const planeId = getUrlParameter('planeId');
 
                 const data = ref({
                     title: '设备信息',
@@ -237,6 +238,19 @@
                     }
                 };
 
+                const handleClose = () => {
+                    if (timer) {
+                        clearInterval(timer);
+                        timer = null;
+                    }
+                    try {
+                        if (window.parent && window.parent !== window) {
+                            window.parent.postMessage({ type: 'model-popup-close', planeId, deviceId: id }, '*');
+                        }
+                    } catch (e) {
+                    }
+                };
+
                 // 组件挂载时
                 onMounted(() => {
                     // 立即执行一次数据获取
@@ -258,7 +272,8 @@
 
                 return {
                     data,
-                    hasAlarm
+                    hasAlarm,
+                    handleClose
                 };
             }
         }).mount('#app');

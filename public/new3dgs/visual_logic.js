@@ -1589,20 +1589,35 @@ function createPL(v3d = window.v3d) {
                 changeVis('章源钨业', false);
             }, function () { }, function () { });
             /* 创建交互ui1 */
-            createObject('PLANE_WITH_HTML', 'YCZY-11', 15, 10, 0, 0, 0, 0, 0, 0, 0, 0, 'PERSPECTIVE', 'ORBIT', 'AMBIENT', 0, '/modelHtmlPoup/model.html?deviceName=YCZY-1&&deviceId=40197946', 759);
+            createObject('PLANE_WITH_HTML', 'YCZY-11', 15, 10, 0, 0, 0, 0, 0, 0, 0, 0, 'PERSPECTIVE', 'ORBIT', 'AMBIENT', 0, '/modelHtmlPoup/model.html?deviceName=YCZY-1&deviceId=40197946&planeId=YCZY-11', 759);
             setObjTransform('YCZY-11', false, 'position', [getObjTransform('YCZY1', false, 'position', 'x') + 10, getObjTransform('YCZY1', false, 'position', 'y'), getObjTransform('YCZY1', false, 'position', 'z') + 13], false);
             makeParent('YCZY-11', 'YCZY1');
             changeVis('YCZY-11', false);
             /* 创建交互ui2 */
-            createObject('PLANE_WITH_HTML', 'YCZY-22', 15, 10, 0, 0, 0, 0, 0, 0, 0, 0, 'PERSPECTIVE', 'ORBIT', 'AMBIENT', 0, '/modelHtmlPoup/model.html?deviceName=YCZY-2&&deviceId=40348239', 759);
+            createObject('PLANE_WITH_HTML', 'YCZY-22', 15, 10, 0, 0, 0, 0, 0, 0, 0, 0, 'PERSPECTIVE', 'ORBIT', 'AMBIENT', 0, '/modelHtmlPoup/model.html?deviceName=YCZY-2&deviceId=40348239&planeId=YCZY-22', 759);
             setObjTransform('YCZY-22', false, 'position', [getObjTransform('YCZY2', false, 'position', 'x') + 10, getObjTransform('YCZY2', false, 'position', 'y'), getObjTransform('YCZY2', false, 'position', 'z') + 10], false);
             makeParent('YCZY-22', 'YCZY2');
             changeVis('YCZY-22', false);
             /* 创建交互ui3 */
-            createObject('PLANE_WITH_HTML', 'YCZY-33', 15, 10, 0, 0, 0, 0, 0, 0, 0, 0, 'PERSPECTIVE', 'ORBIT', 'AMBIENT', 0, '/modelHtmlPoup/model.html?deviceName=YCZY-3&&deviceId=40348238', 759);
+            createObject('PLANE_WITH_HTML', 'YCZY-33', 15, 10, 0, 0, 0, 0, 0, 0, 0, 0, 'PERSPECTIVE', 'ORBIT', 'AMBIENT', 0, '/modelHtmlPoup/model.html?deviceName=YCZY-3&deviceId=40348238&planeId=YCZY-33', 759);
             setObjTransform('YCZY-33', false, 'position', [getObjTransform('YCZY3', false, 'position', 'x') + 10, getObjTransform('YCZY3', false, 'position', 'y'), getObjTransform('YCZY3', false, 'position', 'z') + 10], false);
             makeParent('YCZY-33', 'YCZY3');
             changeVis('YCZY-33', false);
+            /* 监听 iframe 关闭消息，隐藏所有弹窗 */
+            try {
+                window.addEventListener('message', function (evt) {
+                    if (evt && evt.data && evt.data.type === 'model-popup-close') {
+                        const targetId = evt.data.planeId;
+                        const ids = targetId ? [targetId] : ['YCZY-11', 'YCZY-22', 'YCZY-33'];
+                        ids.forEach(function (id) {
+                            try {
+                                changeVis(id, false);
+                                setHTMLElemStyle('visibility', 'hidden', 'v3d-css-render-obj-' + id, false);
+                            } catch (e) { }
+                        });
+                    }
+                });
+            } catch (e) { }
             /* 制作交互事件1 */
             registerOnClick('YCZY1', true, false, [0], false, function (event) {
                 tweenCamera(createVector(41, -89, 23), 'YCZY-11', 1, function () { }, 1);
@@ -1647,7 +1662,7 @@ function createPL(v3d = window.v3d) {
             });
             /* 制作交互事件3 */
             registerOnClick('YCZY3', true, false, [0], false, function (event) {
-                tweenCamera(createVector(30, -123, 11.95), 'YCZY-33', 1, function () { }, 0);
+                tweenCamera(createVector(30, -183, 11.95), 'YCZY-33', 1, function () { }, 0);
                 changeVis('YCZY-33', true);
                 setHTMLElemStyle('visibility', 'visible', 'v3d-css-render-obj-YCZY-33', false);
             }, function (event) {
