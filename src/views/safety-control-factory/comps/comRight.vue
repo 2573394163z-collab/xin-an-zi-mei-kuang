@@ -11,22 +11,10 @@ const data = ref({
     1: {
       在岗人数: {
         name: '在岗人数',
-        value: 698,
+        value: 0, // 初始化为0，稍后会计算
         img: 'bg-[url(@/assets/img/8-1.png)]',
         textColor: 'text-[#62EFD3]',
       },
-      // 请假人数: {
-      //   name: '请假人数',
-      //   value: 3,
-      //   img: 'bg-[url(@/assets/img/8-2.png)]',
-      //   textColor: 'text-[#62EFD3]',
-      // },
-      // 离职人数: {
-      //   name: '离职人数',
-      //   value: 6,
-      //   img: 'bg-[url(@/assets/img/8-3.png)]',
-      //   textColor: 'text-[#FFB348]',
-      // },
     },
     2: {
       中段1: {
@@ -89,12 +77,6 @@ const data = ref({
         dir: 'center',
         width: 3,
       },
-      // {
-      //   label: '处置状态',
-      //   prop: 'k5',
-      //   dir: 'center',
-      //   width: 1,
-      // },
     ],
     data: [
       {
@@ -102,49 +84,42 @@ const data = ref({
         k2: 'XXX',
         k3: 'XXX',
         k4: 'XXXXXX',
-        // k5: 'XXX',
       },
       {
         k1: '2',
         k2: 'XXX',
         k3: 'XXX',
         k4: 'XXXXXX',
-        // k5: 'XXX',
       },
       {
         k1: '3',
         k2: 'XXX',
         k3: 'XXX',
         k4: 'XXXXXX',
-        // k5: 'XXX',
       },
       {
         k1: '4',
         k2: 'XXX',
         k3: 'XXX',
         k4: 'XXXXXX',
-        // k5: 'XXX',
       },
       {
         k1: '5',
         k2: 'XXX',
         k3: 'XXX',
         k4: 'XXXXXX',
-        // k5: 'XXX',
       },
       {
         k1: '6',
         k2: 'XXX',
         k3: 'XXX',
         k4: 'XXXXXX',
-        // k5: 'XXX',
       },
       {
         k1: '7',
         k2: 'XXX',
         k3: 'XXX',
         k4: 'XXXXXX',
-        // k5: 'XXX',
       },
     ],
   },
@@ -176,6 +151,7 @@ const data = ref({
     },
   },
 })
+
 const allRightContents = ref([
   [{ id: 'KTU-001', name: '095防跑车一', status: '正常', url: 'rtsp://admin:abc12345@172.16.89.21/streaming/channels/102' }],
   [{ id: 'KTU-002', name: '045 休息室', status: '正常', url: 'rtsp://admin:zy123456@192.168.3.117/streaming/channels/102' }],
@@ -230,7 +206,7 @@ const fetchRealMessage = async () => {
       const personCount = item.WzNowNum || 0
 
       // 提取区域编号（如 "045"）
-      const areaMatch = wzName.match(/^(\d+)/)
+      const areaMatch = wzName.match(/^(-?\d+)/)
       if (areaMatch) {
         const areaNumber = areaMatch[1]
 
@@ -250,28 +226,13 @@ const fetchRealMessage = async () => {
         value: areaCount[key],
       }
     })
-  }
-}
 
-// 获取在岗行人数
-const fetchAttendanceDetail = async () => {
-  const today = new Date()
-  const year = today.getFullYear()
-  const month = String(today.getMonth() + 1).padStart(2, '0')
-  const day = String(today.getDate()).padStart(2, '0')
-  
-  const beginTime = `${year}-${month}-${day} 00:00:00`
-  const endTime = `${year}-${month}-${day} 23:59:59`
-
-  const params = {
-    queryJson: JSON.stringify({ BeginTime: beginTime, EndTime: endTime }),
-    page: 1,
-    rows: 999,
-  }
-
-  const res = await getAttendanceDetail(params)
-  if (res.data.code === 200) {
-    data.value.section1[1]['在岗人数'].value = res.data.data?.Records || 0
+    // 计算所有中段的总人数，并更新在岗人数
+    let totalCount = 0
+    Object.values(areaCount).forEach(count => {
+      totalCount += count
+    })
+    data.value.section1[1]['在岗人数'].value = totalCount
   }
 }
 
@@ -308,11 +269,9 @@ const fetchAlarmInfo = async () => {
 
 onMounted(() => {
   fetchRealMessage()
-  fetchAttendanceDetail()
   fetchAlarmInfo()
 
   TimerManager.addTimer('fetchRealMessage', fetchRealMessage)
-  TimerManager.addTimer('fetchAttendanceDetail', fetchAttendanceDetail)
   TimerManager.addTimer('fetchAlarmInfo', fetchAlarmInfo)
   
   timer = setInterval(() => {
@@ -325,9 +284,7 @@ onMounted(() => {
 onUnmounted(() => {
   clearInterval(timer)
   TimerManager.clearTimer('fetchRealMessage')
-  TimerManager.clearTimer('fetchAttendanceDetail')
   TimerManager.clearTimer('fetchAlarmInfo')
-
 })
 </script>
 <template>
@@ -365,17 +322,6 @@ onUnmounted(() => {
     </div>
     <cus-title title="视频监控" />
     <div class="bg-[url('@/assets/img/1.png')] h-[420px] w-[700px] kt-bg-full flex flex-col">
-      <!-- <div class="bg-[url('@/assets/img/12.png')] h-[33px] w-[192px] kt-bg-full ml-[33px] text-[24px] pl-[33px]">XXX巷道口</div> -->
-      <!-- <div class="ml-[33px] mt-[7px] flex items-center justify-center bg-[url('@/assets/img/video.png')] kt-bg-full" style="height: 362px; width: 647px">
-        <div class="relative">
-          <video class="w-[610px] h-[343px] object-cover rounded-sm bg-gray-900" autoplay muted loop>
-            <div class="w-full h-full flex flex-col items-center justify-center text-gray-500">
-              <div class="i-carbon-video-off text-4xl mb-2"></div>
-              <div>视频流未连接</div>
-            </div>
-          </video>
-        </div>
-      </div> -->
       <div class="w-full h-full mt-[13px] flex flex-wrap justify-center">
         <cus-jk-video v-for="(item, index) in rightContent1" :key="index" :url="item.url" :uid="item.id" :title="item.name" />
       </div>
