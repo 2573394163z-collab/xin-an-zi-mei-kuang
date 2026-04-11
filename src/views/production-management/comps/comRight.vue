@@ -2,7 +2,7 @@
 import cusTitle from '@/components/my-ui/cus-title.vue'
 import ktTable from '@/components/my-ui/kt-table.vue'
 import cusPjTable from '@/components/my-ui/cus-pj-table.vue'
-import { getGroupStatus,getDefaultEntity } from '@/axios/production-management'
+import { getGroupStatus, getDefaultEntity } from '@/axios/production-management'
 import TimerManager from '@/utils/timerManager'
 
 const data = ref({
@@ -84,7 +84,7 @@ const fetchDefaultEntity = async () => {
   if (res.data.code === 200) {
     const d = res.data.data
     const shifts = []
-    
+
     // 获取当前时间（分钟数）用于匹配
     const now = new Date()
     const nowMinutes = now.getHours() * 60 + now.getMinutes()
@@ -94,7 +94,7 @@ const fetchDefaultEntity = async () => {
       const name = d[`bcmc${i}`]
       const start = d[`kssj${i}`]
       const end = d[`jssj${i}`]
-      
+
       if (name && start && end) {
         // 计算开始和结束时间的分钟数
         const [sH, sM] = start.split(':').map(Number)
@@ -115,7 +115,7 @@ const fetchDefaultEntity = async () => {
           name,
           start,
           end,
-          active
+          active,
         })
 
         if (active) {
@@ -123,7 +123,7 @@ const fetchDefaultEntity = async () => {
         }
       }
     }
-    
+
     data.value.section2.shifts = shifts
   }
 }
@@ -145,7 +145,9 @@ onUnmounted(() => {
 <template>
   <div class="w-[700px] top-[117px] right-[44px] absolute flex flex-col">
     <!-- 班组状态  -->
-    <cus-title title="班组状态" position="right" :download="true" />
+    <!-- <cus-title title="班组状态" position="right" :download="true" /> -->
+    <cus-title title="班组状态" position="right" />
+
     <div class="bg-[url('@/assets/img/1.png')] h-[180px] w-[700px] kt-bg-full flex flex-col items-center justify-around">
       <div class="w-[650px] flex items-center justify-around">
         <div v-for="(item, index) in data.section1[1]" key="index">
