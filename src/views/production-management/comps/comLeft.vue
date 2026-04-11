@@ -66,8 +66,8 @@ const ProductionProgress = async () => {
 
   if (res.data.code === 200) {
     const result = res.data.data
-    data.value.section1[1]['当日采掘进尺'].value = result.dailyNum||0
-    data.value.section1[1]['当月采掘进尺'].value = result.monthlyNum||0
+    data.value.section1[1]['当日采掘进尺'].value = result.dailyNum || 0
+    data.value.section1[1]['当月采掘进尺'].value = result.monthlyNum || 0
 
     data.value.section1[2].list.forEach((item) => {
       item.name = ''
@@ -88,7 +88,7 @@ const ProductionExecutionPlan = async () => {
     const { dailyPlanNum, dailyCompleteNum, productionExecutionYearPlanDTO } = res.data.data
     console.log('dailyPlanNum:', dailyPlanNum)
     data.value.section2['1']['日产量'].planValue = dailyPlanNum
-        console.log('data.value.section2[1][日产量]:', dailyPlanNum)
+    console.log('data.value.section2[1][日产量]:', dailyPlanNum)
     data.value.section2['1']['日产量'].actualValue = dailyCompleteNum
 
     data.value.section2['1']['年产量'].planValue = productionExecutionYearPlanDTO.yearPlanNum
@@ -121,7 +121,8 @@ onUnmounted(() => {
 <template>
   <div class="w-[700px] top-[117px] left-[44px] absolute flex flex-col">
     <!-- 生产进度  -->
-    <cus-title title="生产进度" position="left" :download="true" />
+    <!-- <cus-title title="生产进度" position="left" :download="true" /> -->
+    <cus-title title="生产进度" position="left" />
     <div class="bg-[url('@/assets/img/1.png')] h-[718px] w-[700px] kt-bg-full flex flex-col items-center justify-around">
       <div class="flex gap-x-[24px] flex-wrap">
         <div v-for="(item, index) in data.section1[1]" :key="index" class="w-[318px] h-[117px] bg-[url('@/assets/img/24.png')] kt-bg-full flex flex-col">
