@@ -3,7 +3,7 @@ class TimerManager {
         this.timers=new Map();   // 存储定时器的Map对象
     }
 
-    addTimer(key,callback,interval=300000){ //时间默认5分钟
+    addTimer(key,callback,interval=60000){ //时间默认1分钟
         if(this.timers.has(key)){
             this.clearTimer(key); 
         }

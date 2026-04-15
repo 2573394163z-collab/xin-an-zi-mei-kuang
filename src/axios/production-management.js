@@ -20,3 +20,12 @@ export function getDefaultEntity(params = {}) {
       needToken: true,
     })
 }
+
+// 获取部门实时人员
+export function getGisRealDeptPersonInfos(params = {}) {
+    const apiUrl = window.kt_config?.api_url || 'http://192.168.3.201:8001'
+    return request(`${apiUrl}/RYDW/RealMessage/GetGisRealDeptPersonInfos`, params, 'post', {
+      isForm: true,
+      needToken: true,
+    })
+}

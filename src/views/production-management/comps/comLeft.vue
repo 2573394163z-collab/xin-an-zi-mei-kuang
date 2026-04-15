@@ -69,15 +69,15 @@ const ProductionProgress = async () => {
     data.value.section1[1]['当日采掘进尺'].value = result.dailyNum || 0
     data.value.section1[1]['当月采掘进尺'].value = result.monthlyNum || 0
 
-    data.value.section1[2].list.forEach((item) => {
-      item.name = ''
-      item.value = ''
-      item.unit = ''
-    })
-    data.value.section1[2].list.forEach((item, index) => {
-      item.name = result.list[index].type
-      item.value = ((result.list[index].dailyCompleteNum / result.list[index].dailyPlanNum) * 100).toFixed(2)
-      item.unit = '%'
+    const fixedOrder = ['采矿', '选矿', '运输']
+    fixedOrder.forEach((type, index) => {
+      const matchedItem = result.list.find((item) => item.type === type)
+
+      if (matchedItem) {
+        data.value.section1[2].list[index].name = matchedItem.type
+        data.value.section1[2].list[index].value = ((matchedItem.dailyCompleteNum / matchedItem.dailyPlanNum) * 100).toFixed(2)
+        data.value.section1[2].list[index].unit = '%'
+      }
     })
   }
 }
@@ -86,15 +86,21 @@ const ProductionExecutionPlan = async () => {
   const res = await getProductionExecutionPlan({})
   if (res.data.code === 200) {
     const { dailyPlanNum, dailyCompleteNum, productionExecutionYearPlanDTO } = res.data.data
-    console.log('dailyPlanNum:', dailyPlanNum)
-    data.value.section2['1']['日产量'].planValue = dailyPlanNum
-    console.log('data.value.section2[1][日产量]:', dailyPlanNum)
-    data.value.section2['1']['日产量'].actualValue = dailyCompleteNum
 
-    data.value.section2['1']['年产量'].planValue = productionExecutionYearPlanDTO.yearPlanNum
-    data.value.section2['1']['年产量'].actualValue = productionExecutionYearPlanDTO.yearCompleteNum
+    const planNum = Number(dailyPlanNum) || 0
+    const actualNum = Number(dailyCompleteNum) || 0
+    const yearPlanNum = Number(productionExecutionYearPlanDTO?.yearPlanNum) || 0
+    const yearCompleteNum = Number(productionExecutionYearPlanDTO?.yearCompleteNum) || 0
 
-    echartsData1.value = panel(data.value.section2['1']['日产量'].actualValue, data.value.section2['1']['日产量'].planValue)
+    // 更新数据
+    data.value.section2['1']['日产量'].planValue = planNum
+    data.value.section2['1']['日产量'].actualValue = actualNum
+
+    data.value.section2['1']['年产量'].planValue = yearPlanNum
+    data.value.section2['1']['年产量'].actualValue = yearCompleteNum
+
+    // 生成图表数据
+    echartsData1.value = panel(planNum, actualNum)
   }
 }
 
@@ -106,8 +112,8 @@ onMounted(() => {
 // ProductionProgress()
 // 组件挂载时设置定时器
 onMounted(() => {
-  ProductionExecutionPlan()
   ProductionProgress()
+  ProductionExecutionPlan()
 
   TimerManager.addTimer('productionExecutionPlan', ProductionExecutionPlan)
   TimerManager.addTimer('productionProgress', ProductionProgress)
@@ -121,8 +127,8 @@ onUnmounted(() => {
 <template>
   <div class="w-[700px] top-[117px] left-[44px] absolute flex flex-col">
     <!-- 生产进度  -->
-    <!-- <cus-title title="生产进度" position="left" :download="true" /> -->
-    <cus-title title="生产进度" position="left" />
+    <cus-title title="生产进度" position="left" :download="true" @import-success="ProductionProgress" />
+    <!-- <cus-title title="生产进度" position="left" /> -->
     <div class="bg-[url('@/assets/img/1.png')] h-[718px] w-[700px] kt-bg-full flex flex-col items-center justify-around">
       <div class="flex gap-x-[24px] flex-wrap">
         <div v-for="(item, index) in data.section1[1]" :key="index" class="w-[318px] h-[117px] bg-[url('@/assets/img/24.png')] kt-bg-full flex flex-col">
@@ -145,15 +151,19 @@ onUnmounted(() => {
       <div class="flex flex-col gap-y-[30px]">
         <div v-for="(item, index) in data.section1[2].list" key="index">
           <div class="w-[650px] h-[144px] kt-bg-full flex items-center" :class="[item.bg]">
-            <span class="ml-[202px] text-[28px]">{{ item.name }}</span>
-            <span class="ml-[262px] text-[48px]" :class="item.textClass">{{ item.value }}</span>
-            <span class="ml-[13px] mt-[26px] text-[20px]">{{ item.unit }}</span>
+            <div class="w-[407.31px] h-[58px] flex items-center justify-between text-[24px] font-[Source-Han-Sans-CN] ml-[201px]">
+              <div class="w-[57px] text-[28px]">{{ item.name }}</div>
+              <div>
+                <span class="text-[48px]" :class="item.textClass">{{ item.value }}</span>
+                <span class="mt-[26px] text-[20px]">{{ item.unit }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
     <!-- 生产计划执行 -->
-    <cus-title title="生产计划执行" position="left" :download="true" />
+    <cus-title title="生产计划执行" position="left" :download="true" @import-success="ProductionExecutionPlan" />
     <div class="bg-[url('@/assets/img/1.png')] h-[421px] w-[700px] kt-bg-full flex items-center justify-around">
       <div class="flex-2">
         <div class="w-[204px] h-[164px] bg-[url('@/assets/img/3.png')] kt-bg-full relative pl-[8px] ml-[31px]">

@@ -2,7 +2,7 @@
 import cusTitle from '@/components/my-ui/cus-title.vue'
 import ktTable from '@/components/my-ui/kt-table.vue'
 import cusPjTable from '@/components/my-ui/cus-pj-table.vue'
-import { getGroupStatus, getDefaultEntity } from '@/axios/production-management'
+import { getGroupStatus, getDefaultEntity, getGisRealDeptPersonInfos } from '@/axios/production-management'
 import TimerManager from '@/utils/timerManager'
 
 const data = ref({
@@ -67,6 +67,20 @@ const data = ref({
     },
   },
 })
+const personnelList = ref([
+  {
+    title: '当前井下带班领导',
+    count: 0,
+    bgClass: 'bg-[url(@/assets/img/production/bg4.png)]',
+    gradient: 'linear-gradient(to top, #83bdf3 , #ffffff)'
+  },
+  {
+    title: '当前井下干部',
+    count: 0,
+    bgClass: 'bg-[url(@/assets/img/production/bg5.png)]',
+    gradient: 'linear-gradient(to top, #94f8e2, #ffffff)'
+  },
+])
 
 const GroupStatus = async () => {
   const res = await getGroupStatus({})
@@ -83,7 +97,7 @@ const fetchDefaultEntity = async () => {
   const res = await getDefaultEntity()
   if (res.data.code === 200) {
     const d = res.data.data
-    const shifts = []
+    // const shifts = []
 
     // 获取当前时间（分钟数）用于匹配
     const now = new Date()
@@ -111,12 +125,12 @@ const fetchDefaultEntity = async () => {
           active = nowMinutes >= startMin || nowMinutes < endMin
         }
 
-        shifts.push({
-          name,
-          start,
-          end,
-          active,
-        })
+        // shifts.push({
+        //   name,
+        //   start,
+        //   end,
+        //   active,
+        // })
 
         if (active) {
           data.value.section2['1'].type = name
@@ -124,29 +138,70 @@ const fetchDefaultEntity = async () => {
       }
     }
 
-    data.value.section2.shifts = shifts
+    // data.value.section2.shifts = shifts
   }
 }
 
-// GroupStatus()
+const fetchRealMessage = async () => {
+   const params = {
+    personState: 2,
+    cardType: 0
+  }
+  const res = await getGisRealDeptPersonInfos(params)
+  
+  if (res.data.code === 200) {
+    const result = res.data.data
+    const deptInfos = result.GisDeptPersonInfos || []
+
+    let leaderCount = 0 // 带班领导人数
+    let cadreCount = 0 // 干部人数
+    
+    // 遍历所有部门
+    deptInfos.forEach(dept => {
+      const personInfos = dept.PersonInfos || []
+      
+      // 遍历部门内所有人员
+      personInfos.forEach(person => {
+        if (person.PersonState === 2) {
+          // 统计带班领导
+          if (person.IsSubstituteLeader === '是') {
+            leaderCount++
+          }
+          
+          // 统计干部
+          if (person.IsCadre === '干部') {
+            cadreCount++
+          }
+        }
+      })
+    })
+    
+    // 更新UI显示
+    personnelList.value[0].count = leaderCount
+    personnelList.value[1].count = cadreCount
+  }
+}
+
 onMounted(() => {
   GroupStatus()
   fetchDefaultEntity()
+  fetchRealMessage()
 
   TimerManager.addTimer('groupStatus', GroupStatus)
-  TimerManager.addTimer('defaultEntity', fetchDefaultEntity)
+  TimerManager.addTimer('defaultEntity', fetchDefaultEntity, 5000) //5秒刷新
+  TimerManager.addTimer('realMessage', fetchRealMessage, 5000) //5秒刷新
 })
 
 onUnmounted(() => {
   TimerManager.clearTimer('groupStatus')
   TimerManager.clearTimer('defaultEntity')
+  TimerManager.clearTimer('realMessage')
 })
 </script>
 <template>
   <div class="w-[700px] top-[117px] right-[44px] absolute flex flex-col">
     <!-- 班组状态  -->
-    <!-- <cus-title title="班组状态" position="right" :download="true" /> -->
-    <cus-title title="班组状态" position="right" />
+    <cus-title title="班组状态" position="right" :download="true" @import-success="GroupStatus" />
 
     <div class="bg-[url('@/assets/img/1.png')] h-[180px] w-[700px] kt-bg-full flex flex-col items-center justify-around">
       <div class="w-[650px] flex items-center justify-around">
@@ -165,7 +220,7 @@ onUnmounted(() => {
     <cus-title title="值带班信息" position="right" />
     <div class="bg-[url('@/assets/img/1.png')] h-[508px] w-[700px] kt-bg-full flex flex-col items-center px-[20px] py-[30px]">
       <!-- 当前班次头部 -->
-      <div class="w-full h-[80px] bg-[url('@/assets/img/production/title.png')] flex items-center justify-between px-[30px] mb-[40px] relative">
+      <div class="w-full h-[80px] bg-[url('@/assets/img/production/title.png')] flex items-center justify-between px-[30px] relative">
         <div class="flex items-center gap-[15px]">
           <span class="text-[32px] font-bold">当前班次</span>
         </div>
@@ -173,14 +228,11 @@ onUnmounted(() => {
       </div>
 
       <!-- 班次表格 -->
-      <div class="w-full flex flex-col gap-[15px]">
-        <!-- 表头 -->
+      <!-- <div class="w-full flex flex-col gap-[15px]">
         <div class="flex justify-end gap-[20px] pr-[20px]">
           <div class="w-[254px] h-[66px] bg-[url('@/assets/img/production/bg.png')] kt-flex text-[#FFFFFF] text-[24px] relative">开始</div>
           <div class="w-[254px] h-[66px] bg-[url('@/assets/img/production/bg.png')] kt-flex text-[#62EFD3] text-[24px] relative">结束</div>
         </div>
-
-        <!-- 数据行 -->
         <div
           v-for="(item, index) in data.section2.shifts"
           :key="index"
@@ -194,6 +246,26 @@ onUnmounted(() => {
             <span>{{ item.start }}</span>
             <span>{{ item.end }}</span>
           </div>
+        </div>
+      </div> -->
+
+      <div class="w-full flex justify-around gap-[20px]">
+        <div
+          v-for="(item, index) in personnelList"
+          :key="index"
+          class="w-[320px] h-[369px] relative flex flex-col items-center justify-center"
+          :class="[item.bgClass]"
+        >
+          <!-- 标题 -->
+          <div class=" text-[24px] text-center mt-[219px] font-[NotoSansSC]"  :style="{ 
+    background: item.gradient,
+    '-webkit-background-clip': 'text',
+    'background-clip': 'text',
+    '-webkit-text-fill-color': 'transparent'
+  }">{{ item.title }}</div>
+
+          <!-- 人数 -->
+          <div class="text-white text-[36px] font-bold  mt-[13px]">{{ item.count }} <span class="text-[24px]">人</span></div>
         </div>
       </div>
     </div>

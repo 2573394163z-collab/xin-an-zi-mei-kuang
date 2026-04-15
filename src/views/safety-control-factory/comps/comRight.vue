@@ -11,7 +11,7 @@ const data = ref({
     1: {
       在岗人数: {
         name: '在岗人数',
-        value: 0, // 初始化为0，稍后会计算
+        value: 0, 
         img: 'bg-[url(@/assets/img/8-1.png)]',
         textColor: 'text-[#62EFD3]',
       },
@@ -271,7 +271,7 @@ onMounted(() => {
   fetchRealMessage()
   fetchAlarmInfo()
 
-  TimerManager.addTimer('fetchRealMessage', fetchRealMessage)
+  TimerManager.addTimer('fetchRealMessage', fetchRealMessage, 5000) //5秒刷新
   TimerManager.addTimer('fetchAlarmInfo', fetchAlarmInfo)
   
   timer = setInterval(() => {
@@ -307,7 +307,6 @@ onUnmounted(() => {
             <div class="pl-[26px] text-[24px]">{{ item.name }}</div>
             <div class="pl-[26px] -mt-[10px] text-[28px] font-bold flex">
               {{ item.value }}
-
               <span class="text-[20px] pt-[6px] font-normal">个</span>
             </div>
           </div>

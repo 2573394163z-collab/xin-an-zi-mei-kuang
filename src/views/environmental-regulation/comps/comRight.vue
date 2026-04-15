@@ -187,17 +187,21 @@ const transformData = (rawData) => {
   console.log('rawData: ', rawData)
   return rawData.map((item) => ({
     date: item.record_date.split('-').slice(1).join('/'), // 将日期格式转换为 MM/DD
-    value: Number(parseFloat(item.data_increment).toFixed(2)), // 转换为浮点数并保留两位小数
+    value: item.day_increment, // 转换为浮点数并保留两位小数
   }))
+  console.log('transformData result: ', result)
 }
 const powerConsumptionAnalysis = async () => {
   const res = await getPowerConsumptionAnalysis()
+  console.log('powerConsumptionAnalysis res: ', res)
   if (res.data.code === 200) {
     const result = res.data.data
+
+    console.log('powerConsumptionAnalysis result: ', result)
     const totalPower = result['本月总耗电量数据统计']
-
-    const powerValue = typeof totalPower === 'string' ? totalPower : totalPower?.value || '--'
-
+    console.log('totalPower: ', totalPower)
+    const powerValue =totalPower
+    console.log('powerValue: ', powerValue)
     // 转换并格式化
     data.value.section2['1'].total = powerValue !== '--' ? parseFloat(powerValue).toFixed(2) : '--' 
 
