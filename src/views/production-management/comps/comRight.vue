@@ -8,12 +8,6 @@ import TimerManager from '@/utils/timerManager'
 const data = ref({
   section1: {
     1: {
-      // 考勤率: {
-      //   name: '考勤率',
-      //   value: 94,
-      //   unit: '%',
-      //   bg: 'bg-[url(@/assets/img/27-1.png)]',
-      // },
       出勤率: {
         name: '出勤率',
         value: 94,
@@ -67,28 +61,17 @@ const data = ref({
     },
   },
 })
-const personnelList = ref([
-  {
-    title: '当前井下带班领导',
-    count: 0,
-    bgClass: 'bg-[url(@/assets/img/production/bg4.png)]',
-    gradient: 'linear-gradient(to top, #83bdf3 , #ffffff)'
-  },
-  {
-    title: '当前井下干部',
-    count: 0,
-    bgClass: 'bg-[url(@/assets/img/production/bg5.png)]',
-    gradient: 'linear-gradient(to top, #94f8e2, #ffffff)'
-  },
-])
 
+// 存储具体人员名单
+const leaderList = ref([]) // 带班领导
+const cadreList = ref([]) // 干部
+
+// 获取班组状态
 const GroupStatus = async () => {
   const res = await getGroupStatus({})
-  console.log(res)
   if (res.data.code === 200) {
     const { dailyGroupRealNum, dailyGroupPlanNum } = res.data.data
     data.value.section1['1']['出勤率'].value = ((dailyGroupRealNum / dailyGroupPlanNum) * 100).toFixed(0)
-    // data.value.section1[1].考勤率.value = attendanceRate
   }
 }
 
@@ -97,88 +80,67 @@ const fetchDefaultEntity = async () => {
   const res = await getDefaultEntity()
   if (res.data.code === 200) {
     const d = res.data.data
-    // const shifts = []
-
-    // 获取当前时间（分钟数）用于匹配
     const now = new Date()
     const nowMinutes = now.getHours() * 60 + now.getMinutes()
 
-    // 循环处理三个班次
     for (let i = 1; i <= 3; i++) {
       const name = d[`bcmc${i}`]
       const start = d[`kssj${i}`]
       const end = d[`jssj${i}`]
 
       if (name && start && end) {
-        // 计算开始和结束时间的分钟数
         const [sH, sM] = start.split(':').map(Number)
         const [eH, eM] = end.split(':').map(Number)
         let startMin = sH * 60 + sM
         let endMin = eH * 60 + eM
 
-        // 处理跨天情况（例如 16:00 - 00:00）
         let active = false
         if (startMin <= endMin) {
           active = nowMinutes >= startMin && nowMinutes < endMin
         } else {
-          // 跨天逻辑
           active = nowMinutes >= startMin || nowMinutes < endMin
         }
-
-        // shifts.push({
-        //   name,
-        //   start,
-        //   end,
-        //   active,
-        // })
 
         if (active) {
           data.value.section2['1'].type = name
         }
       }
     }
-
-    // data.value.section2.shifts = shifts
   }
 }
 
+// 获取实时人员信息
 const fetchRealMessage = async () => {
-   const params = {
+  const params = {
     personState: 2,
-    cardType: 0
+    cardType: 0,
   }
   const res = await getGisRealDeptPersonInfos(params)
-  
+
   if (res.data.code === 200) {
     const result = res.data.data
     const deptInfos = result.GisDeptPersonInfos || []
 
-    let leaderCount = 0 // 带班领导人数
-    let cadreCount = 0 // 干部人数
-    
-    // 遍历所有部门
-    deptInfos.forEach(dept => {
+    leaderList.value = []
+    cadreList.value = []
+
+    deptInfos.forEach((dept) => {
       const personInfos = dept.PersonInfos || []
-      
-      // 遍历部门内所有人员
-      personInfos.forEach(person => {
+      personInfos.forEach((person) => {
         if (person.PersonState === 2) {
-          // 统计带班领导
           if (person.IsSubstituteLeader === '是') {
-            leaderCount++
+            leaderList.value.push(person.Name || '未知')
           }
-          
-          // 统计干部
           if (person.IsCadre === '干部') {
-            cadreCount++
+            cadreList.value.push(person.Name || '未知')
           }
         }
       })
     })
-    
-    // 更新UI显示
-    personnelList.value[0].count = leaderCount
-    personnelList.value[1].count = cadreCount
+
+    // 更新统计人数
+    personnelList.value[0].count = leaderList.value.length
+    personnelList.value[1].count = cadreList.value.length
   }
 }
 
@@ -188,8 +150,8 @@ onMounted(() => {
   fetchRealMessage()
 
   TimerManager.addTimer('groupStatus', GroupStatus)
-  TimerManager.addTimer('defaultEntity', fetchDefaultEntity, 5000) //5秒刷新
-  TimerManager.addTimer('realMessage', fetchRealMessage, 5000) //5秒刷新
+  TimerManager.addTimer('defaultEntity', fetchDefaultEntity, 5000)
+  TimerManager.addTimer('realMessage', fetchRealMessage, 5000)
 })
 
 onUnmounted(() => {
@@ -198,11 +160,11 @@ onUnmounted(() => {
   TimerManager.clearTimer('realMessage')
 })
 </script>
+
 <template>
   <div class="w-[700px] top-[117px] right-[44px] absolute flex flex-col">
-    <!-- 班组状态  -->
+    <!-- 班组状态 -->
     <cus-title title="班组状态" position="right" :download="true" @import-success="GroupStatus" />
-
     <div class="bg-[url('@/assets/img/1.png')] h-[180px] w-[700px] kt-bg-full flex flex-col items-center justify-around">
       <div class="w-[650px] flex items-center justify-around">
         <div v-for="(item, index) in data.section1[1]" key="index">
@@ -216,59 +178,54 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
+
     <!-- 值带班信息 -->
     <cus-title title="值带班信息" position="right" />
-    <div class="bg-[url('@/assets/img/1.png')] h-[508px] w-[700px] kt-bg-full flex flex-col items-center px-[20px] py-[30px]">
+
+    <div class="bg-[url('@/assets/img/1.png')] h-[508px] w-[700px] kt-bg-full flex flex-col items-center px-[20px] py-[10px] pointer-events-auto">
       <!-- 当前班次头部 -->
-      <div class="w-full h-[80px] bg-[url('@/assets/img/production/title.png')] flex items-center justify-between px-[30px] relative">
+      <div class="w-full h-[80px] kt-bg-full bg-[url('@/assets/img/production/title.png')] flex items-center justify-between px-[30px] relative">
         <div class="flex items-center gap-[15px]">
           <span class="text-[32px] font-bold">当前班次</span>
         </div>
         <span class="text-[36px] text-[#83DAFF] font-bold mr-[58px]">{{ data.section2['1'].type }}</span>
       </div>
 
-      <!-- 班次表格 -->
-      <!-- <div class="w-full flex flex-col gap-[15px]">
-        <div class="flex justify-end gap-[20px] pr-[20px]">
-          <div class="w-[254px] h-[66px] bg-[url('@/assets/img/production/bg.png')] kt-flex text-[#FFFFFF] text-[24px] relative">开始</div>
-          <div class="w-[254px] h-[66px] bg-[url('@/assets/img/production/bg.png')] kt-flex text-[#62EFD3] text-[24px] relative">结束</div>
+      <!-- 当前井下带班领导 -->
+      <div class="w-full mt-[13px]">
+        <div class="w-full h-[65.91px] bg-[url('@/assets/img/production/listHeader.png')] flex items-center justify-center text-[28px] font-bold">
+          <span class="bg-gradient-to-t from-[#83bdf3] to-white bg-clip-text text-transparent"> 当前井下带班领导 </span>
         </div>
-        <div
-          v-for="(item, index) in data.section2.shifts"
-          :key="index"
-          class="w-full h-[73px] bg-[url(@/assets/img/production/bg2.png)] flex items-center border"
-          :class="[item.active ? 'border-[#FFFFFF] border-[3px]' : '']"
-        >
-          <div class="w-[120px] h-full flex items-center justify-center text-[28px] relative">
-            {{ item.name }}
+        <div class="w-full h-[58px] max-h-[120px] p-[5px] overflow-y-auto grid grid-cols-4 gap-[10px] bg-[url('@/assets/img/production/listBg.png')]">
+          <div
+            v-for="(name, index) in leaderList"
+            :key="index"
+            class="w-[156px] h-[48px] bg-[url('@/assets/img/production/listItem.png')] text-white text-center text-[24px] flex items-center justify-center"
+          >
+            {{ name }}
           </div>
-          <div class="flex-1 flex items-center justify-around text-[28px] px-[40px]">
-            <span>{{ item.start }}</span>
-            <span>{{ item.end }}</span>
-          </div>
+          <div v-if="leaderList.length === 0" class="col-span-4 h-[48px] text-white text-center text-[24px] flex items-center justify-center">暂无数据</div>
         </div>
-      </div> -->
+      </div>
 
-      <div class="w-full flex justify-around gap-[20px]">
-        <div
-          v-for="(item, index) in personnelList"
-          :key="index"
-          class="w-[320px] h-[369px] relative flex flex-col items-center justify-center"
-          :class="[item.bgClass]"
-        >
-          <!-- 标题 -->
-          <div class=" text-[24px] text-center mt-[219px] font-[NotoSansSC]"  :style="{ 
-    background: item.gradient,
-    '-webkit-background-clip': 'text',
-    'background-clip': 'text',
-    '-webkit-text-fill-color': 'transparent'
-  }">{{ item.title }}</div>
-
-          <!-- 人数 -->
-          <div class="text-white text-[36px] font-bold  mt-[13px]">{{ item.count }} <span class="text-[24px]">人</span></div>
+      <!-- 当前井下干部 -->
+      <div class="w-full mt-[20px]">
+        <div class="w-full h-[65.91px] bg-[url('@/assets/img/production/listHeader.png')] flex items-center justify-center text-[28px] font-bold">
+          <span class="bg-gradient-to-t from-[#94f8e2] to-white bg-clip-text text-transparent"> 当前井下干部 </span>
+        </div>
+        <div class="w-full h-[174px] max-h-[174px] p-[5px] overflow-y-auto grid grid-cols-4 gap-[10px] bg-[url('@/assets/img/production/listBg2.png')]">
+          <div
+            v-for="(name, index) in cadreList"
+            :key="index"
+            class="w-[156px] h-[48px] bg-[url('@/assets/img/production/listItem2.png')] text-white text-center text-[24px] flex items-center justify-center"
+          >
+            {{ name }}
+          </div>
+          <div v-if="cadreList.length === 0" class="col-span-4 h-full text-white text-center text-[24px] flex items-center justify-center">暂无数据</div>
         </div>
       </div>
     </div>
+
     <!-- 设备与运输 -->
     <cus-title title="设备与运输" position="right" />
     <div class="bg-[url('@/assets/img/1.png')] h-[367px] w-[700px] kt-bg-full flex flex-wrap items-center justify-around">
@@ -290,4 +247,6 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* 可添加额外样式 */
+</style>

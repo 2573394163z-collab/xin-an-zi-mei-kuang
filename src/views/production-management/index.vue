@@ -82,7 +82,7 @@ const handleSelect = (index) => {
 <template>
   <comLeft class="z-2" />
   <comRight class="z-2" />
-  <div class="absolute top-[147px] left-[767px] w-[282px] h-auto bg-[url('@/assets/img/17-1.png')] kt-bg-full z-3 pointer-events-auto">
+  <div v-if="store.selectScene === '井下场景'" class="absolute top-[147px] left-[767px] w-[282px] h-auto bg-[url('@/assets/img/17-1.png')] kt-bg-full z-3 pointer-events-auto">
     <div v-for="(item, index) in data.left1" key="index" @click="handleSelect(index)">
       <div class="w-[272px] h-[56px] kt-bg-full flex items-center justify-center" :class="[item.active ? item.bg2 : item.bg1]">
         <div class="w-[36px] h-[36px] kt-bg-full" :class="[item.active ? item.icon2 : item.icon1]"></div>
