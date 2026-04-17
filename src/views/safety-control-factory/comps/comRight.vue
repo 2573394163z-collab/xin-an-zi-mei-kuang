@@ -191,7 +191,7 @@ let currentIndex = 1
 // 获取各中段人数
 const fetchRealMessage = async () => {
   const params = {
-    personState: -1, //人员状态-1.全部0.地面1.井口2.井下（必传）
+    personState: 2, //人员状态-1.全部0.地面1.井口2.井下（必传）
     cardType: 0, //0.人员1.车辆（必传）
   }
 
