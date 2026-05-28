@@ -8,6 +8,6 @@ window.kt_config = {
   monitor_ip: "http://192.168.3.99:1399", //监控ip
   username:"admin1",
   password:"e10adc3949ba59abbe56e057f20f883e",
-  api_url: "http://192.168.3.201:8001",
+  api_url: "http://192.168.3.201:6001",
   showSafety: false,
 };

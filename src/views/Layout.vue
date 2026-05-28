@@ -12,7 +12,6 @@ const isRoamActive = ref(false)
 const handleRoamChange = (roamState) => {
 
   isRoamActive.value = roamState
-  console.log('漫游状态:', roamState)
 }
 // 导航变化处理函数
 const handleNavChange = (newState) => {

@@ -661,7 +661,6 @@ export const createOption1 = (rawData) => {
 };
 
 export const createOption2 = (rawData) => {
-  console.log('createOption2 rawData: ', rawData)
   const data = (rawData || [
     {
       date: "9.1",

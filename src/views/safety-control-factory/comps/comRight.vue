@@ -252,7 +252,6 @@ const fetchAlarmInfo = async () => {
     rows: 999,
   }
   const res = await getAlarmInfo(params)
-  console.log('告警列表 res:', res)
   if (res.data.code === 200) {
     const list = res.data.data?.rows || []
     data.value.section2.data = list.map((item, index) => {

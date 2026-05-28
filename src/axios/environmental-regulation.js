@@ -27,3 +27,14 @@ export function getEnvironmentalDeviceById(params = {}){
     return request(`/environmentalSupervision/getEnvironmentalDeviceById`, params, 'get');
 }
 
+// 获取安全监控设备定义以及实时信息
+export function getListAllDevice(params = {}) {
+   const apiUrl = window.kt_config?.api_url || 'http://192.168.3.201:8001'
+    return request(`${apiUrl}/Index/MainUI/ListAllDevice`, params, 'get', {
+      isForm: true,
+      needToken: true,
+    })
+}
+
+
+

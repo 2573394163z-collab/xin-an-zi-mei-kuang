@@ -62,7 +62,6 @@ let echartsData1 = ref({})
 // 获取生产进度
 const ProductionProgress = async () => {
   const res = await getProductionProgress({})
-  console.log(res)
 
   if (res.data.code === 200) {
     const result = res.data.data

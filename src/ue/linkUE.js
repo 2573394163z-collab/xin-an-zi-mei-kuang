@@ -12,15 +12,18 @@ if (typeof ue !== "object" || typeof ue.interface !== "object") {
       let o = [e, ""];
       if (t !== undefined) o[1] = t;
       const n = encodeURIComponent(JSON.stringify(o));
+      const currentHash = window.location.hash;
       if (
         typeof history === "object" &&
         typeof history.pushState === "function"
       ) {
         history.pushState({}, "", "#" + n);
-        history.pushState({}, "", "#" + encodeURIComponent("[]"));
+        history.replaceState({}, "", currentHash);
+        // history.pushState({}, "", "#" + encodeURIComponent("[]"));
       } else {
         document.location.hash = n;
-        document.location.hash = encodeURIComponent("[]");
+          document.location.hash = currentHash.substring(1);
+        // document.location.hash = encodeURIComponent("[]");
       }
     }
   };

@@ -131,12 +131,10 @@ const search = () => {
   nextTick(() => {
     scrollRef.value?.reset()
   })
-  console.log(filteredList.value)
 }
 
 const alarmList = async () => {
   const res = await getAlarmList()
-  console.log('11111111111111111111', res)
   if (res.code === 200) {
     const result = res.data.data
     data.value.section3 = result.map((item) => {
@@ -184,29 +182,22 @@ const waterResourcesList = async () => {
 
 // 数据转换函数
 const transformData = (rawData) => {
-  console.log('rawData: ', rawData)
   return rawData.map((item) => ({
     date: item.record_date.split('-').slice(1).join('/'), // 将日期格式转换为 MM/DD
     value: item.day_increment, // 转换为浮点数并保留两位小数
   }))
-  console.log('transformData result: ', result)
 }
 const powerConsumptionAnalysis = async () => {
   const res = await getPowerConsumptionAnalysis()
-  console.log('powerConsumptionAnalysis res: ', res)
   if (res.data.code === 200) {
     const result = res.data.data
 
-    console.log('powerConsumptionAnalysis result: ', result)
     const totalPower = result['本月总耗电量数据统计']
-    console.log('totalPower: ', totalPower)
     const powerValue =totalPower
-    console.log('powerValue: ', powerValue)
     // 转换并格式化
     data.value.section2['1'].total = powerValue !== '--' ? parseFloat(powerValue).toFixed(2) : '--' 
 
     data.value.section2[2].options.option1 = createOption2(transformData(result['电力近七天消耗曲线']))
-    console.log('data.value.section2[2].options.option1: ', data.value.section2[2].options.option1)
   }
 }
 // alarmList()
