@@ -247,7 +247,7 @@ const fetchAlarmInfo = async () => {
   const endTime = `${year}-${month}-${day} 23:59:59`
 
   const params = {
-    queryJson: JSON.stringify({ BeginTime: beginTime, EndTime: endTime }),
+    queryJson: JSON.stringify({ BeginTime: beginTime, EndTime: endTime, NoEnd:1 }),
     page: 1,
     rows: 999,
   }
